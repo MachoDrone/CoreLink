@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100">
+    <div class="login-card card shadow-lg">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-0">CoreLink</h2>
+                <small class="text-muted" style="font-size: 0.65rem;">v{{ version }}</small>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger py-2 small" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" autocomplete="on">
+                <div class="mb-3">
+                    <label for="username" class="form-label small">Username</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                           required autofocus autocomplete="username">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label small">Password</label>
+                    <input type="password" class="form-control" id="password" name="password"
+                           required autocomplete="current-password">
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                    <label class="form-check-label small" for="remember">Remember me</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Log in</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
