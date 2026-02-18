@@ -20,7 +20,7 @@ import time
 import urllib.request
 import urllib.error
 
-VERSION = "0.00.2"
+VERSION = "0.00.3"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
 REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU"

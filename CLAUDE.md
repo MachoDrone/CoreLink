@@ -1,24 +1,70 @@
-# CoreLink
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Overview
-GPU cluster communication framework. Host launcher script, Docker container 
-with HTTPS web console, PAM auth, GPU discovery, and UDP gossip protocol 
-for LAN-wide node status across up to 254 machines.
+CoreLink is a GPU cluster communication framework. A host launcher script builds and manages a Docker container that runs an HTTPS web console with PAM auth, GPU discovery, and a UDP gossip protocol for LAN-wide node status across up to 254 machines.
+
+## Build & Run Commands
+All commands go through the single entry point `corelink.py`:
+```
+python3 corelink.py --check          # Verify prerequisites (Ubuntu 20-24, nvidia-smi, nvidia-ctk, Docker)
+python3 corelink.py --build          # Build Docker image only
+python3 corelink.py --start          # Build if needed + start container
+python3 corelink.py --stop           # Stop and remove container
+python3 corelink.py --restart        # Stop then start
+python3 corelink.py --status         # Show container status
+python3 corelink.py --logs           # Show container logs
+python3 corelink.py --logs-follow    # Stream logs live
+python3 corelink.py --start --port 8443  # Custom HTTPS port (default: 443)
+python3 corelink.py --version        # Show version
+```
+There are no unit tests, linters, or CI pipelines. Validation is manual: build, start, log in via browser, check GPU table populates.
+
+## Architecture
+
+### Two-Layer Design
+- **Host layer** (`corelink.py`): Pure Python 3.8+ stdlib — no pip allowed. Handles prereq checks, Docker image builds, and container lifecycle. Detects curl-pipe execution (`__file__` starting with `/dev/`) and downloads container files from GitHub via `urllib.request` when needed.
+- **Container layer** (`container/`): nvidia/cuda:12.2.0-base-ubuntu22.04 base. Flask + Flask-SocketIO web app with all pip dependencies isolated inside the container.
+
+### PAM Authentication Flow
+The container authenticates users against the **host OS** by bind-mounting `/etc/passwd`, `/etc/shadow`, and `/etc/pam.d` as read-only. `python-pam` in `auth.py` calls PAM's `login` service. Flask-Login manages sessions with an 8-hour lifetime.
+
+### Gossip Protocol (`gossip.py`)
+Runs 4 daemon threads inside `GossipNode`:
+1. **Heartbeat** — broadcasts JSON via UDP multicast (`239.77.77.77:47100`) every ~5s with jitter
+2. **Receive** — listens on multicast + unicast (`47101`) via `select.select()`; processes heartbeat, digest_req, digest_resp messages
+3. **Anti-entropy** — every ~10s picks a random peer, exchanges digest `{node_id: seq}` to fill gaps from lost packets
+4. **Reaper** — marks nodes stale after 20s, removes after 60s
+
+Uses dual sockets: multicast (47100) for one-to-many, unicast (47101) for targeted digest responses. TTL=1 keeps traffic on the local subnet.
+
+### Real-Time Web Console
+`server.py` runs a background thread that calls `gossip.get_cluster_state()` every 3s and emits `cluster_state` via Socket.IO to all authenticated clients. The frontend (`app.js`) rebuilds the GPU table on each event. Connection uses WebSocket with polling fallback.
+
+### Container Networking
+`--network host` is required — the container must share the host network stack for UDP multicast to work. This means the HTTPS port (default 443) binds directly on the host.
+
+### Persistent State
+Docker named volume `corelink-data` mounted at `/data` stores:
+- Self-signed TLS cert/key (`/data/ssl/`)
+- Flask secret key (`/data/secret_key`)
+
+Generated on first run by `entrypoint.sh`, survives container restarts.
+
+## Key Conventions
+- **Version string** appears in: `corelink.py` (line ~20, `VERSION`), `container/app/templates/base.html`, and `README.md` header. Update all three when bumping.
+- **REPO_RAW_URL** in `corelink.py` (line ~25) controls where curl-pipe mode fetches container files. Must point to the correct branch.
+- **Frontend assets** (Bootstrap, Socket.IO JS) are downloaded during `docker build` and bundled — no CDN calls at runtime.
+- **Threading mode**: Flask-SocketIO uses `simple-websocket` backend, not eventlet/gevent. All concurrency is via Python threads.
 
 ## Tech Stack
 - Host script: Pure Python 3.8+ stdlib (no pip)
-- Container: nvidia/cuda:12.2.0-base-ubuntu22.04
-- Web: Flask + Flask-SocketIO (threading mode)
+- Container base: nvidia/cuda:12.2.0-base-ubuntu22.04
+- Web: Flask + Flask-SocketIO (threading mode, simple-websocket)
 - Auth: python-pam + Flask-Login
-- Frontend: Bootstrap 5 (bundled)
-- Gossip: UDP multicast 239.77.77.77:47100
-
-## Build & Test
-- Prereq check: python3 corelink.py --check
-- Build: python3 corelink.py --build
-- Start: python3 corelink.py --start
-- Stop/Restart: --stop, --restart
-- Logs: --logs, --logs-follow
+- Frontend: Bootstrap 5 (bundled), Socket.IO 4.7.5 client
+- Gossip: UDP multicast 239.77.77.77:47100, unicast 47101
 
 ## Project Tracking
 - See IMPLEMENTATION_PLAN.md for current roadmap. Update it as tasks are completed.

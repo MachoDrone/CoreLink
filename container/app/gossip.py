@@ -75,7 +75,7 @@ class GossipNode:
         nodes.append({
             "node_id": self.hostname,
             "gpus": self.local_gpu_info,
-            "timestamp": time.strftime("%d%b%y %H:%M:%S").upper(),
+            "timestamp": time.strftime("%d%b%y %H:%M:%Sutc").upper(),
             "status": "online",
         })
 
@@ -146,7 +146,7 @@ class GossipNode:
                 "type": "heartbeat",
                 "node_id": self.hostname,
                 "gpus": self.local_gpu_info,
-                "timestamp": time.strftime("%d%b%y %H:%M:%S").upper(),
+                "timestamp": time.strftime("%d%b%y %H:%M:%Sutc").upper(),
                 "seq": self.seq,
             }
             try:
@@ -273,7 +273,7 @@ class GossipNode:
             updates.append({
                 "node_id": self.hostname,
                 "gpus": self.local_gpu_info,
-                "timestamp": time.strftime("%d%b%y %H:%M:%S").upper(),
+                "timestamp": time.strftime("%d%b%y %H:%M:%Sutc").upper(),
                 "seq": self.seq,
             })
 

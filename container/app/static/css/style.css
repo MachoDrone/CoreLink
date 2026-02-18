@@ -62,7 +62,7 @@ body {
 .table thead th {
     background-color: var(--cl-surface);
     border-bottom-color: var(--cl-border);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--cl-text-muted);
@@ -79,8 +79,8 @@ body {
 }
 
 .table tbody td {
-    font-size: 0.875rem;
-    padding: 0.55rem 0.75rem;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
     vertical-align: middle;
 }
 

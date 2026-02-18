@@ -57,7 +57,7 @@
                 for (var g = 0; g < gpus.length; g++) {
                     html += "<tr class=\"" + rowClass + "\">"
                           + "<td>" + esc(node.node_id) + "</td>"
-                          + "<td>GPU" + gpus[g].id + "</td>"
+                          + "<td>" + gpus[g].id + "</td>"
                           + "<td>" + esc(gpus[g].model) + "</td>"
                           + "<td>" + esc(node.timestamp) + "</td>"
                           + "</tr>";
