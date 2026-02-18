@@ -16,7 +16,7 @@ from auth import authenticate_pam, User, check_rate_limit, record_failure
 from gossip import GossipNode
 from gpu import get_local_gpu_info
 
-VERSION = "0.00.1"
+VERSION = "0.00.2"
 
 # ---------------------------------------------------------------------------
 # Flask application setup

@@ -16,10 +16,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.request
 import urllib.error
 
-VERSION = "0.00.1"
+VERSION = "0.00.2"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
 REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU"
@@ -41,10 +42,14 @@ CONTAINER_FILES = [
 
 
 def print_banner():
+    green = "\033[32m"
+    reset = "\033[0m"
     print("")
-    print("  CoreLink v%s" % VERSION)
+    print("  %sCoreLink v%s%s" % (green, VERSION, reset))
     print("  GPU Cluster Communication Framework")
     print("  " + "=" * 40)
+    sys.stdout.flush()
+    time.sleep(3)
     print("")
 
 

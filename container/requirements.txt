@@ -3,3 +3,4 @@ flask-socketio
 flask-login
 simple-websocket
 python-pam
+six
