@@ -13,6 +13,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -20,10 +21,14 @@ import time
 import urllib.request
 import urllib.error
 
-VERSION = "0.00.3"
+VERSION = "0.00.4"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
 REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU"
+
+CA_DIR = os.path.join(os.path.expanduser("~"), ".corelink", "ca")
+CA_CERT_PATH = os.path.join(CA_DIR, "ca.pem")
+CA_KEY_PATH = os.path.join(CA_DIR, "ca-key.pem")
 
 CONTAINER_FILES = [
     "container/Dockerfile",
@@ -244,6 +249,209 @@ def download_container_files():
 
 
 # ---------------------------------------------------------------------------
+# TLS certificate management (local CA)
+# ---------------------------------------------------------------------------
+
+def ensure_ca():
+    """Create a local CA root cert + key if not already present."""
+    if os.path.isfile(CA_CERT_PATH) and os.path.isfile(CA_KEY_PATH):
+        print("[*] Local CA exists: %s" % CA_CERT_PATH)
+        return True
+
+    os.makedirs(CA_DIR, mode=0o700, exist_ok=True)
+    print("[*] Generating CoreLink local CA...")
+
+    result = run_cmd(
+        'openssl genrsa -out "%s" 4096' % CA_KEY_PATH, timeout=30
+    )
+    if result is None:
+        print("[FAIL] Could not generate CA key.")
+        return False
+    os.chmod(CA_KEY_PATH, 0o600)
+
+    result = run_cmd(
+        'openssl req -x509 -new -nodes '
+        '-key "%s" -sha256 -days 3650 '
+        '-subj "/CN=CoreLink Local CA/O=CoreLink" '
+        '-out "%s"' % (CA_KEY_PATH, CA_CERT_PATH),
+        timeout=30,
+    )
+    if result is None:
+        print("[FAIL] Could not generate CA certificate.")
+        return False
+    os.chmod(CA_CERT_PATH, 0o644)
+
+    print("[OK] CA certificate: %s" % CA_CERT_PATH)
+    print("     Install this in your browser/OS to trust all CoreLink nodes.")
+    return True
+
+
+def get_host_ips():
+    """Return all non-loopback IPv4 addresses on this host."""
+    ips = set()
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            addr = info[4][0]
+            if not addr.startswith("127."):
+                ips.add(addr)
+    except Exception:
+        pass
+
+    # Fallback: UDP probe to discover default-route IP
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))
+        ips.add(s.getsockname()[0])
+        s.close()
+    except Exception:
+        pass
+
+    return sorted(ips)
+
+
+def generate_node_cert(hostname, ips):
+    """Generate a server cert signed by the local CA with SANs.
+
+    Returns (cert_path, key_path) on success, (None, None) on failure.
+    """
+    node_dir = os.path.join(
+        os.path.expanduser("~"), ".corelink", "nodes", hostname
+    )
+    cert_path = os.path.join(node_dir, "cert.pem")
+    key_path = os.path.join(node_dir, "key.pem")
+
+    os.makedirs(node_dir, mode=0o700, exist_ok=True)
+
+    # Build SAN list
+    sans = [
+        "DNS:%s" % hostname,
+        "DNS:%s.local" % hostname,
+        "DNS:localhost",
+        "IP:127.0.0.1",
+    ]
+    for ip in ips:
+        sans.append("IP:%s" % ip)
+    san_string = ",".join(sans)
+
+    print("[*] Generating node certificate for %s..." % hostname)
+    print("    SANs: %s" % san_string)
+
+    # Generate node private key
+    result = run_cmd('openssl genrsa -out "%s" 2048' % key_path, timeout=30)
+    if result is None:
+        print("[FAIL] Could not generate node key.")
+        return None, None
+    os.chmod(key_path, 0o600)
+
+    # Generate CSR
+    csr_path = os.path.join(node_dir, "node.csr")
+    result = run_cmd(
+        'openssl req -new -key "%s" '
+        '-subj "/CN=%s/O=CoreLink" '
+        '-out "%s"' % (key_path, hostname, csr_path),
+        timeout=30,
+    )
+    if result is None:
+        print("[FAIL] Could not generate CSR.")
+        return None, None
+
+    # Create SAN extension file
+    ext_path = os.path.join(node_dir, "san.ext")
+    with open(ext_path, "w") as fh:
+        fh.write("authorityKeyIdentifier=keyid,issuer\n")
+        fh.write("basicConstraints=CA:FALSE\n")
+        fh.write("keyUsage=digitalSignature,keyEncipherment\n")
+        fh.write("extendedKeyUsage=serverAuth\n")
+        fh.write("subjectAltName=%s\n" % san_string)
+
+    # Sign with CA
+    result = run_cmd(
+        'openssl x509 -req -in "%s" '
+        '-CA "%s" -CAkey "%s" -CAcreateserial '
+        '-out "%s" -days 825 -sha256 '
+        '-extfile "%s"' % (csr_path, CA_CERT_PATH, CA_KEY_PATH,
+                           cert_path, ext_path),
+        timeout=30,
+    )
+    if result is None:
+        print("[FAIL] Could not sign node certificate.")
+        return None, None
+
+    # Clean up temp files
+    for tmp in (csr_path, ext_path):
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+
+    print("[OK] Node certificate generated: %s" % cert_path)
+    return cert_path, key_path
+
+
+def needs_cert_regen(cert_path):
+    """Check if the existing cert needs regeneration."""
+    if not os.path.isfile(cert_path):
+        return True
+
+    # Verify cert against CA
+    result = run_cmd(
+        'openssl verify -CAfile "%s" "%s"' % (CA_CERT_PATH, cert_path)
+    )
+    if result is None or "OK" not in result.stdout:
+        return True
+
+    # Check SANs include current IPs
+    result = run_cmd(
+        'openssl x509 -in "%s" -noout -ext subjectAltName' % cert_path
+    )
+    if result is None:
+        return True
+
+    current_ips = get_host_ips()
+    for ip in current_ips:
+        if ("IP Address:%s" % ip) not in result.stdout:
+            return True
+
+    return False
+
+
+def get_ca_command():
+    """Print CA cert location and installation instructions."""
+    if not os.path.isfile(CA_CERT_PATH):
+        print("[!] No CA certificate found. Run --start first to generate one.")
+        return 1
+
+    print("CoreLink CA Certificate: %s" % CA_CERT_PATH)
+    print("")
+    print("Install this certificate to trust all CoreLink nodes:")
+    print("")
+    print("  Linux (system-wide):")
+    print("    sudo cp %s /usr/local/share/ca-certificates/corelink-ca.crt"
+          % CA_CERT_PATH)
+    print("    sudo update-ca-certificates")
+    print("")
+    print("  Linux (Firefox only):")
+    print("    Settings > Privacy & Security > Certificates > View > Import")
+    print("")
+    print("  macOS:")
+    print("    sudo security add-trusted-cert -d -r trustRoot \\")
+    print("      -k /Library/Keychains/System.keychain %s" % CA_CERT_PATH)
+    print("")
+    print("  Windows:")
+    print('    certutil -addstore -f "ROOT" %s' % CA_CERT_PATH)
+    print("")
+    print("  Copy to another machine:")
+    print("    scp %s user@workstation:~/corelink-ca.pem" % CA_CERT_PATH)
+    print("")
+
+    with open(CA_CERT_PATH) as fh:
+        print("--- PEM contents ---")
+        print(fh.read())
+
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # Docker operations
 # ---------------------------------------------------------------------------
 
@@ -270,7 +478,7 @@ def image_exists():
     return result is not None and result.stdout.strip() != ""
 
 
-def start_container(port=443):
+def start_container(port=443, regen_cert=False):
     """Start the CoreLink container."""
     # Already running?
     result = run_cmd("docker ps -q -f name=^/%s$" % CONTAINER_NAME)
@@ -284,6 +492,25 @@ def start_container(port=443):
 
     hostname = platform.node()
 
+    # --- CA + node cert management ---
+    if not ensure_ca():
+        return False
+
+    ips = get_host_ips()
+    node_dir = os.path.join(
+        os.path.expanduser("~"), ".corelink", "nodes", hostname
+    )
+    cert_path = os.path.join(node_dir, "cert.pem")
+    key_path = os.path.join(node_dir, "key.pem")
+
+    if regen_cert or needs_cert_regen(cert_path):
+        cert_path, key_path = generate_node_cert(hostname, ips)
+        if cert_path is None:
+            print("[FAIL] Could not generate node certificate.")
+            return False
+    else:
+        print("[*] Node certificate is current: %s" % cert_path)
+
     cmd = [
         "docker", "run", "-d",
         "--name", CONTAINER_NAME,
@@ -293,6 +520,9 @@ def start_container(port=443):
         "-v", "/etc/shadow:/etc/shadow:ro",
         "-v", "/etc/pam.d:/etc/pam.d:ro",
         "-v", "corelink-data:/data",
+        "-v", "%s:/data/ssl/cert.pem:ro" % cert_path,
+        "-v", "%s:/data/ssl/key.pem:ro" % key_path,
+        "-v", "%s:/data/ssl/ca.pem:ro" % CA_CERT_PATH,
         "-e", "CORELINK_PORT=%d" % port,
         "-e", "CORELINK_HOSTNAME=%s" % hostname,
         "--restart", "unless-stopped",
@@ -308,7 +538,8 @@ def start_container(port=443):
 
     print("[OK] Container '%s' started." % CONTAINER_NAME)
     print("    Web console: https://%s:%d" % (hostname, port))
-    print("    (Self-signed certificate - accept the browser warning)")
+    print("    CA cert: %s" % CA_CERT_PATH)
+    print("    Run --get-ca for browser install instructions.")
     return True
 
 
@@ -386,6 +617,10 @@ Remote one-liner:
                         help="Follow container logs (live)")
     parser.add_argument("--port", type=int, default=443,
                         help="HTTPS port (default: 443)")
+    parser.add_argument("--get-ca", action="store_true",
+                        help="Show CA certificate location and install instructions")
+    parser.add_argument("--regen-cert", action="store_true",
+                        help="Force regeneration of this node's TLS certificate")
     parser.add_argument("--version", action="version",
                         version="CoreLink v%s" % VERSION)
 
@@ -396,12 +631,16 @@ Remote one-liner:
     action_flags = [
         args.check, args.build, args.start, args.stop,
         args.restart, args.status, args.logs, args.logs_follow,
+        args.get_ca, args.regen_cert,
     ]
     if not any(action_flags):
         parser.print_help()
         return 0
 
     # Quick actions that don't need prereq checks
+    if args.get_ca:
+        return get_ca_command()
+
     if args.status:
         show_status()
         return 0
@@ -413,6 +652,9 @@ Remote one-liner:
     if args.stop:
         stop_container()
         return 0
+
+    if args.regen_cert and not args.start and not args.restart:
+        args.start = True
 
     if args.restart:
         stop_container()
@@ -442,7 +684,7 @@ Remote one-liner:
                 return 1
 
     if args.start:
-        if not start_container(port=args.port):
+        if not start_container(port=args.port, regen_cert=args.regen_cert):
             return 1
 
     return 0

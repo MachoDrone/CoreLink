@@ -18,6 +18,8 @@ python3 corelink.py --logs           # Show container logs
 python3 corelink.py --logs-follow    # Stream logs live
 python3 corelink.py --start --port 8443  # Custom HTTPS port (default: 443)
 python3 corelink.py --version        # Show version
+python3 corelink.py --get-ca         # Show CA cert location + install instructions
+python3 corelink.py --regen-cert     # Force regenerate this node's TLS cert + start
 ```
 There are no unit tests, linters, or CI pipelines. Validation is manual: build, start, log in via browser, check GPU table populates.
 
@@ -45,12 +47,12 @@ Uses dual sockets: multicast (47100) for one-to-many, unicast (47101) for target
 ### Container Networking
 `--network host` is required — the container must share the host network stack for UDP multicast to work. This means the HTTPS port (default 443) binds directly on the host.
 
-### Persistent State
-Docker named volume `corelink-data` mounted at `/data` stores:
-- Self-signed TLS cert/key (`/data/ssl/`)
-- Flask secret key (`/data/secret_key`)
+### TLS Certificates (Local CA)
+On first `--start`, the host script generates a local CA in `~/.corelink/ca/` and signs a per-node cert with SANs for hostname, hostname.local, localhost, and all host IPs. Certs are bind-mounted into the container at `/data/ssl/`. Users install the CA cert once in their browser/OS to trust all nodes. The CA key must be copied to each node so it can sign its own cert. `--get-ca` prints install instructions. `--regen-cert` forces cert regeneration (e.g., after IP change). The container also serves `GET /ca.pem` (unauthenticated) for easy browser download.
 
-Generated on first run by `entrypoint.sh`, survives container restarts.
+### Persistent State
+- **Host**: `~/.corelink/ca/` (CA cert + key), `~/.corelink/nodes/<hostname>/` (node cert + key)
+- **Container**: Docker named volume `corelink-data` at `/data` stores Flask secret key (`/data/secret_key`). TLS certs are bind-mounted from the host.
 
 ## Key Conventions
 - **Version string** appears in: `corelink.py` (line ~20, `VERSION`), `container/app/templates/base.html`, and `README.md` header. Update all three when bumping.

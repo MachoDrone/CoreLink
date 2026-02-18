@@ -6,7 +6,7 @@ import socket
 import time
 from datetime import timedelta
 
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, send_file, abort
 from flask_socketio import SocketIO, emit
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user,
@@ -16,7 +16,7 @@ from auth import authenticate_pam, User, check_rate_limit, record_failure
 from gossip import GossipNode
 from gpu import get_local_gpu_info
 
-VERSION = "0.00.3"
+VERSION = "0.00.4"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -126,6 +126,20 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/ca.pem")
+def download_ca():
+    """Serve the CA certificate for browser installation (unauthenticated)."""
+    ca_path = "/data/ssl/ca.pem"
+    if not os.path.isfile(ca_path):
+        abort(404)
+    return send_file(
+        ca_path,
+        mimetype="application/x-pem-file",
+        as_attachment=True,
+        download_name="corelink-ca.pem",
+    )
+
+
 # ---------------------------------------------------------------------------
 # SocketIO events
 # ---------------------------------------------------------------------------
@@ -178,6 +192,12 @@ if __name__ == "__main__":
         print("    GPU%s: %s" % (gpu["id"], gpu["model"]))
     print("  Port     : %d (HTTPS)" % args.port)
     print("  Gossip   : %d/udp" % _gossip_port)
+    ca_cert = "/data/ssl/ca.pem"
+    if os.path.isfile(ca_cert):
+        print("  TLS      : CA-signed (download CA at https://%s:%d/ca.pem)"
+              % (_hostname, args.port))
+    else:
+        print("  TLS      : Self-signed")
     print("")
 
     # Start gossip protocol

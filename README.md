@@ -55,6 +55,8 @@ Options:
   --logs           Show container logs
   --logs-follow    Follow container logs (live)
   --port PORT      HTTPS port (default: 443)
+  --get-ca         Show CA certificate location and install instructions
+  --regen-cert     Force regeneration of this node's TLS certificate
   --version        Show version
 ```
 
@@ -83,9 +85,32 @@ Options:
 - **UDP multicast** must be enabled on the switch (port 47100–47101).
 - **HTTPS** on port 443 (configurable via `--port`).
 
+## TLS Certificates
+
+On first `--start`, CoreLink generates a **local Certificate Authority** in
+`~/.corelink/ca/` and signs a per-node certificate with SANs for the hostname
+and all host IP addresses.  To eliminate browser warnings across the cluster:
+
+1. Copy the CA files to every node:
+   ```bash
+   scp ~/.corelink/ca/ca.pem ~/.corelink/ca/ca-key.pem  user@othernode:~/.corelink/ca/
+   ```
+2. Run `python3 corelink.py --start` on each node (it will generate its own
+   node cert signed by the shared CA).
+3. Install the CA cert **once** in your browser or OS:
+   ```bash
+   # Linux (system-wide):
+   sudo cp ~/.corelink/ca/ca.pem /usr/local/share/ca-certificates/corelink-ca.crt
+   sudo update-ca-certificates
+   ```
+   Run `python3 corelink.py --get-ca` for macOS/Windows/Firefox instructions.
+
+The CA cert is also downloadable at `https://<hostname>/ca.pem`.
+Use `--regen-cert` to regenerate a node's certificate (e.g., after an IP change).
+
 ## Security
 
-- HTTPS only (self-signed certificate generated on first run).
+- HTTPS with local CA-signed certificates (no browser warnings after CA install).
 - PAM authentication — credentials are verified by the host OS.
 - Secure session cookies (`Secure`, `HttpOnly`, `SameSite=Lax`).
 - Login rate limiting (5 attempts, then 30-second cooldown).
@@ -103,6 +128,5 @@ Options:
 
 - The container must be restarted after host password changes
   (`python3 corelink.py --restart`).
-- A self-signed TLS certificate is generated automatically and persisted
-  in the `corelink-data` Docker volume.  Accept the browser warning on
-  first visit.
+- TLS certificates are stored on the host in `~/.corelink/` and
+  bind-mounted into the container.
