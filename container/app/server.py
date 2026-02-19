@@ -17,7 +17,7 @@ from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
 
-VERSION = "0.00.6"
+VERSION = "0.00.7"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -180,9 +180,11 @@ def _push_cluster_state():
     while True:
         socketio.sleep(3)
         monitor.collect()
+        metrics = monitor.get_metrics()
+        gossip.set_net_kbps(metrics["net_mbps"] * 1000)
         socketio.emit("cluster_state", {
             "nodes": gossip.get_cluster_state(),
-            "monitor": monitor.get_metrics(),
+            "monitor": metrics,
         })
 
 

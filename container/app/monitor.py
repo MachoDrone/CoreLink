@@ -90,7 +90,7 @@ class AppMonitor:
         self._prev_cpu_total = total
         if d_total <= 0:
             return 0.0
-        return round(100.0 * d_app / d_total, 1)
+        return round(100.0 * d_app / d_total, 2)
 
     # ------------------------------------------------------------------
     # RAM — cgroup memory vs host MemTotal
@@ -124,7 +124,7 @@ class AppMonitor:
 
         if mem_total <= 0:
             return 0.0
-        return round(100.0 * mem_bytes / mem_total, 1)
+        return round(100.0 * mem_bytes / mem_total, 2)
 
     # ------------------------------------------------------------------
     # Network — delta of non-disk I/O from /proc/1/io
@@ -159,7 +159,7 @@ class AppMonitor:
             return 0.0
         bytes_per_sec = delta / dt
         mbps = (bytes_per_sec * 8) / 1_000_000
-        return round(mbps, 1)
+        return round(mbps, 3)
 
     # ------------------------------------------------------------------
     # Link speed — first physical up interface

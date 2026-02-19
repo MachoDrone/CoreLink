@@ -33,7 +33,8 @@ class GossipNode:
 
         self.seq = 0
         self._lock = threading.Lock()
-        self._cluster = {}  # {node_id: {gpus, timestamp, seq, last_seen, ip}}
+        self._cluster = {}  # {node_id: {gpus, timestamp, seq, last_seen, ip, net_kbps}}
+        self._net_kbps = 0.0  # local node's AppComm rate, set by server push loop
 
         self._mcast_send_sock = None
         self._mcast_recv_sock = None
@@ -61,6 +62,10 @@ class GossipNode:
     def stop(self):
         self._running = False
 
+    def set_net_kbps(self, value):
+        """Update the local node's network throughput (Kbps) for gossip."""
+        self._net_kbps = value
+
     def get_cluster_state(self):
         """Return the current cluster state for the web UI.
 
@@ -77,6 +82,7 @@ class GossipNode:
             "gpus": self.local_gpu_info,
             "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
             "status": "online",
+            "net_kbps": self._net_kbps,
         })
 
         with self._lock:
@@ -94,6 +100,7 @@ class GossipNode:
                     "gpus": info["gpus"],
                     "timestamp": info["timestamp"],
                     "status": status,
+                    "net_kbps": info.get("net_kbps", 0.0),
                 })
 
         return nodes
@@ -148,6 +155,7 @@ class GossipNode:
                 "gpus": self.local_gpu_info,
                 "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
                 "seq": self.seq,
+                "net_kbps": self._net_kbps,
             }
             try:
                 data = json.dumps(msg).encode("utf-8")
@@ -208,6 +216,7 @@ class GossipNode:
                     "seq": seq,
                     "last_seen": time.time(),
                     "ip": addr[0] if addr else "",
+                    "net_kbps": msg.get("net_kbps", 0.0),
                 }
 
     # ------------------------------------------------------------------
@@ -266,6 +275,7 @@ class GossipNode:
                         "gpus": info["gpus"],
                         "timestamp": info["timestamp"],
                         "seq": info["seq"],
+                        "net_kbps": info.get("net_kbps", 0.0),
                     })
 
         # Include self if the requester is behind
@@ -275,6 +285,7 @@ class GossipNode:
                 "gpus": self.local_gpu_info,
                 "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
                 "seq": self.seq,
+                "net_kbps": self._net_kbps,
             })
 
         if updates:
