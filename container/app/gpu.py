@@ -30,7 +30,7 @@ def get_local_gpu_info():
             parts = line.split(", ", 1)
             gpus.append({
                 "id": int(parts[0].strip()),
-                "model": parts[1].strip() if len(parts) > 1 else "Unknown",
+                "model": parts[1].strip().replace("NVIDIA ", "", 1) if len(parts) > 1 else "Unknown",
             })
         return gpus
 

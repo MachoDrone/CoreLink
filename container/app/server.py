@@ -16,7 +16,7 @@ from auth import authenticate_pam, User, check_rate_limit, record_failure
 from gossip import GossipNode
 from gpu import get_local_gpu_info
 
-VERSION = "0.00.4"
+VERSION = "0.00.5"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -88,6 +88,7 @@ def index():
         "console.html",
         version=VERSION,
         username=current_user.username,
+        hostname=_hostname,
     )
 
 

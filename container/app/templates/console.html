@@ -34,16 +34,19 @@
     <!-- Test tab -->
     <div class="tab-pane fade show active" id="tab-test" role="tabpanel" aria-labelledby="test-tab">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small text-muted">
+            <span class="text-muted" style="font-size: 0.7rem;">
                 Cluster Status &mdash; <span id="node-count">0</span> node(s) online
             </span>
-            <span id="connection-status" class="badge bg-secondary small">connecting...</span>
+            <span style="font-size: 0.7rem;">
+                <span class="text-muted me-1">{{ hostname }}</span>
+                <span id="connection-status" class="badge bg-secondary" style="font-size: 0.7rem;">connecting...</span>
+            </span>
         </div>
         <div class="table-responsive">
             <table class="table table-sm table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>PC Name</th>
+                        <th>PC</th>
                         <th>GPUid</th>
                         <th>Model</th>
                         <th>Timestamp</th>

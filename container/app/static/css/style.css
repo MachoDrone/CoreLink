@@ -63,7 +63,6 @@ body {
     background-color: var(--cl-surface);
     border-bottom-color: var(--cl-border);
     font-size: 0.7rem;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--cl-text-muted);
     font-weight: 600;

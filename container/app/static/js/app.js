@@ -15,14 +15,14 @@
     socket.on("connect", function () {
         if (connBadge) {
             connBadge.textContent = "connected";
-            connBadge.className = "badge bg-success-subtle small";
+            connBadge.className = "badge bg-success-subtle";
         }
     });
 
     socket.on("disconnect", function () {
         if (connBadge) {
             connBadge.textContent = "disconnected";
-            connBadge.className = "badge bg-danger-subtle small";
+            connBadge.className = "badge bg-danger-subtle";
         }
     });
 
