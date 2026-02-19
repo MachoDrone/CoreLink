@@ -21,7 +21,7 @@ import time
 import urllib.request
 import urllib.error
 
-VERSION = "0.00.5"
+VERSION = "0.00.6"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
 REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU"
@@ -38,6 +38,7 @@ CONTAINER_FILES = [
     "container/app/auth.py",
     "container/app/gossip.py",
     "container/app/gpu.py",
+    "container/app/monitor.py",
     "container/app/templates/base.html",
     "container/app/templates/login.html",
     "container/app/templates/console.html",

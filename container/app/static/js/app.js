@@ -9,6 +9,7 @@
     var tbody        = document.getElementById("gpu-table-body");
     var nodeCount    = document.getElementById("node-count");
     var connBadge    = document.getElementById("connection-status");
+    var appMonitor   = document.getElementById("app-monitor");
 
     // ---- Connection status ----
 
@@ -28,7 +29,22 @@
 
     // ---- Cluster state updates ----
 
-    socket.on("cluster_state", function (nodes) {
+    socket.on("cluster_state", function (data) {
+        var nodes = data.nodes || [];
+        var mon   = data.monitor || {};
+
+        // Update monitor line
+        if (appMonitor) {
+            var cpu  = mon.cpu  != null ? mon.cpu  : "\u2014";
+            var ram  = mon.ram  != null ? mon.ram  : "\u2014";
+            var net  = mon.net_mbps != null ? mon.net_mbps : "\u2014";
+            var link = mon.link_speed ? mon.link_speed : "\u2014";
+            var disk = mon.disk != null ? mon.disk : "\u2014";
+            appMonitor.textContent = "CPU: " + cpu + "%\u2002 RAM: " + ram
+                + "%\u2002 Net: " + net + " / " + link
+                + " Mbps\u2002 Disk: " + disk + "%";
+        }
+
         if (!tbody) return;
 
         // Count online nodes

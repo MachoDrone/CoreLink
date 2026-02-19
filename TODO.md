@@ -7,3 +7,4 @@
 - Add more GPU metrics (temperature, utilization, memory) to cluster table
 - Add sorting/filtering to GPU table
 - Consider adding node uptime or last-seen column
+- Consider per-node monitor metrics (show each node's resource usage in the cluster table)

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.00.6 — 2026-02-18
+- Add self-monitoring resource display above cluster status line
+- New `monitor.py` module: collects app-only CPU %, RAM %, network Mbps, and disk %
+- CPU tracks container threads via `/proc/1/task/*/stat` with delta-based sampling
+- RAM reads cgroup memory (v2 with v1 fallback) as % of host MemTotal
+- Network estimates throughput from `/proc/1/io` non-disk I/O deltas
+- Link speed auto-detected from `/sys/class/net/<iface>/speed`
+- Disk shows sum of `/app` + `/data` files as % of root filesystem
+- Metrics bundled into existing `cluster_state` SocketIO event (no new events)
+- Frontend displays monitor line at 0.7rem above cluster status
+- All stdlib — no new pip dependencies
+- Bump version to 0.00.6 in corelink.py, server.py, and README.md
+
 ## v0.00.5 — 2026-02-18
 - Remove CSS `text-transform: uppercase` from table headers; headers now render as written in HTML
 - Rename "PC Name" column header to "PC"

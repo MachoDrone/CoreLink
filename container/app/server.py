@@ -15,8 +15,9 @@ from flask_login import (
 from auth import authenticate_pam, User, check_rate_limit, record_failure
 from gossip import GossipNode
 from gpu import get_local_gpu_info
+from monitor import AppMonitor
 
-VERSION = "0.00.5"
+VERSION = "0.00.6"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -75,6 +76,8 @@ gossip = GossipNode(
     local_gpu_info=_gpu_info,
     port=_gossip_port,
 )
+
+monitor = AppMonitor()
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +154,10 @@ def handle_connect():
     if not current_user.is_authenticated:
         return False
     # Send initial cluster state to the connecting client
-    emit("cluster_state", gossip.get_cluster_state())
+    emit("cluster_state", {
+        "nodes": gossip.get_cluster_state(),
+        "monitor": monitor.get_metrics(),
+    })
 
 
 @socketio.on("request_update")
@@ -159,7 +165,10 @@ def handle_request_update():
     """Manual refresh requested by the client."""
     if not current_user.is_authenticated:
         return
-    emit("cluster_state", gossip.get_cluster_state())
+    emit("cluster_state", {
+        "nodes": gossip.get_cluster_state(),
+        "monitor": monitor.get_metrics(),
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -170,8 +179,11 @@ def _push_cluster_state():
     """Emit cluster_state to every connected client every 3 seconds."""
     while True:
         socketio.sleep(3)
-        state = gossip.get_cluster_state()
-        socketio.emit("cluster_state", state)
+        monitor.collect()
+        socketio.emit("cluster_state", {
+            "nodes": gossip.get_cluster_state(),
+            "monitor": monitor.get_metrics(),
+        })
 
 
 # ---------------------------------------------------------------------------
