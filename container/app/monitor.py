@@ -6,6 +6,8 @@ No external dependencies — stdlib only.
 
 import os
 import re
+import socket
+import struct
 import subprocess
 import time
 
@@ -24,6 +26,9 @@ class AppMonitor:
         # Graceful degradation: if ethtool failed but negotiated > 0, treat as max
         if self._link_speed_max == 0 and self._link_speed > 0:
             self._link_speed_max = self._link_speed
+        self._ntp_drift = self._query_ntp()
+        self._ntp_last_check = time.monotonic()
+        self._ntp_interval = 60
         self._metrics = {
             "cpu": 0.0,
             "ram": 0.0,
@@ -31,6 +36,7 @@ class AppMonitor:
             "link_speed": self._link_speed,
             "link_speed_max": self._link_speed_max,
             "disk": 0.0,
+            "ntp_drift": self._ntp_drift,
         }
         # Prime the deltas with an initial read
         self._read_cpu()
@@ -52,9 +58,38 @@ class AppMonitor:
         self._metrics["net_mbps"] = self._calc_net(dt)
         self._metrics["disk"] = self._calc_disk()
 
+        if now - self._ntp_last_check >= self._ntp_interval:
+            self._ntp_drift = self._query_ntp()
+            self._ntp_last_check = now
+        self._metrics["ntp_drift"] = self._ntp_drift
+
     def get_metrics(self):
         """Return a copy of the latest metrics dict."""
         return dict(self._metrics)
+
+    # ------------------------------------------------------------------
+    # NTP — query pool.ntp.org for local clock drift
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _query_ntp(server="pool.ntp.org", timeout=2):
+        """Query NTP server, return local clock drift in seconds or None."""
+        NTP_EPOCH = 2208988800  # 1900-01-01 to 1970-01-01
+        try:
+            msg = b'\x1b' + 47 * b'\0'  # NTP v3 client request
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(timeout)
+            sock.sendto(msg, (server, 123))
+            data, _ = sock.recvfrom(1024)
+            sock.close()
+            if len(data) < 48:
+                return None
+            # Transmit timestamp: seconds since 1900
+            ntp_secs = struct.unpack('!I', data[40:44])[0]
+            ntp_time = ntp_secs - NTP_EPOCH
+            return round(time.time() - ntp_time, 3)
+        except Exception:
+            return None
 
     # ------------------------------------------------------------------
     # CPU — app threads vs total system ticks

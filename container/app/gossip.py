@@ -26,7 +26,7 @@ class GossipNode:
     """Manages cluster membership and state via gossip protocol."""
 
     def __init__(self, hostname, local_gpu_info, port=47100,
-                 link_speed=0, link_speed_max=0):
+                 link_speed=0, link_speed_max=0, ntp_drift=None):
         self.hostname = hostname
         self.local_gpu_info = local_gpu_info
         self.port = port
@@ -38,6 +38,7 @@ class GossipNode:
         self._net_kbps = 0.0  # local node's AppComm rate, set by server push loop
         self._link_speed = link_speed
         self._link_speed_max = link_speed_max
+        self._ntp_drift = ntp_drift
 
         self._mcast_send_sock = None
         self._mcast_recv_sock = None
@@ -69,6 +70,10 @@ class GossipNode:
         """Update the local node's network throughput (Kbps) for gossip."""
         self._net_kbps = value
 
+    def set_ntp_drift(self, value):
+        """Update the local node's NTP drift (seconds) for gossip."""
+        self._ntp_drift = value
+
     def get_cluster_state(self):
         """Return the current cluster state for the web UI.
 
@@ -89,6 +94,7 @@ class GossipNode:
             "epoch": time.time(),
             "link_speed": self._link_speed,
             "link_speed_max": self._link_speed_max,
+            "ntp_drift": self._ntp_drift,
         })
 
         with self._lock:
@@ -110,6 +116,7 @@ class GossipNode:
                     "epoch": info.get("epoch", 0),
                     "link_speed": info.get("link_speed", 0),
                     "link_speed_max": info.get("link_speed_max", 0),
+                    "ntp_drift": info.get("ntp_drift"),
                 })
 
         return nodes
@@ -168,6 +175,7 @@ class GossipNode:
                 "epoch": time.time(),
                 "link_speed": self._link_speed,
                 "link_speed_max": self._link_speed_max,
+                "ntp_drift": self._ntp_drift,
             }
             try:
                 data = json.dumps(msg).encode("utf-8")
@@ -232,6 +240,7 @@ class GossipNode:
                     "epoch": msg.get("epoch", 0),
                     "link_speed": msg.get("link_speed", 0),
                     "link_speed_max": msg.get("link_speed_max", 0),
+                    "ntp_drift": msg.get("ntp_drift"),
                 }
 
     # ------------------------------------------------------------------
@@ -294,6 +303,7 @@ class GossipNode:
                         "epoch": info.get("epoch", 0),
                         "link_speed": info.get("link_speed", 0),
                         "link_speed_max": info.get("link_speed_max", 0),
+                        "ntp_drift": info.get("ntp_drift"),
                     })
 
         # Include self if the requester is behind
@@ -307,6 +317,7 @@ class GossipNode:
                 "epoch": time.time(),
                 "link_speed": self._link_speed,
                 "link_speed_max": self._link_speed_max,
+                "ntp_drift": self._ntp_drift,
             })
 
         if updates:

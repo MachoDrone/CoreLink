@@ -75,7 +75,7 @@
             var nicLabel = fmtNicSpeed(node.link_speed);
             var nicColor = nicSpeedClass(node.link_speed, node.link_speed_max);
             var nicHtml = "<span style=\"" + nicColor + "\">" + nicLabel + "</span>";
-            var tsIndicator = timeSyncIndicator(node.epoch);
+            var tsIndicator = timeSyncIndicator(node.ntp_drift);
 
             if (gpus.length === 0) {
                 // Node with no GPUs (shouldn't happen but handle gracefully)
@@ -131,10 +131,9 @@
         return "color: var(--cl-success)";
     }
 
-    function timeSyncIndicator(epoch) {
-        if (!epoch || epoch === 0) return "";
-        var drift = Math.abs(Date.now() / 1000 - epoch);
-        if (drift <= 15) {
+    function timeSyncIndicator(ntp_drift) {
+        if (ntp_drift == null) return "";
+        if (Math.abs(ntp_drift) <= 2) {
             return " <span style=\"color:var(--cl-success)\">\u2713</span>";
         }
         return " <span style=\"color:var(--cl-danger)\">\u2717</span>";

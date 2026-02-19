@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.00.9 — 2026-02-19
+- Replace browser-based time sync check with real NTP verification against `pool.ntp.org`
+- New SNTP client in `monitor.py`: 48-byte UDP query, refreshes drift every 60s
+- Add `ntp_drift` field to gossip heartbeat, cluster state, and anti-entropy exchanges
+- Frontend `timeSyncIndicator()` now uses `ntp_drift` instead of comparing `epoch` vs browser clock
+- Tighten sync threshold from 15s (browser-relative) to 2s (NTP-verified)
+- `ntp_drift=None` (NTP unreachable) shows no indicator — graceful degradation
+- Backward compatible: older v0.00.8 nodes default to `None` for `ntp_drift`; `epoch` still gossiped
+- Bump version to 0.00.9 in corelink.py, server.py, and README.md
+
 ## v0.00.8 — 2026-02-19
 - Rename status line from "Cluster Status" to "Fleet" with PC/Host counts and singular/plural logic
 - Add NIC column between GPUid and Model showing color-coded negotiated link speed (red ≤1G, yellow <max, green =max)
