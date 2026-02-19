@@ -25,7 +25,8 @@ TTL = 1                        # multicast TTL (LAN only)
 class GossipNode:
     """Manages cluster membership and state via gossip protocol."""
 
-    def __init__(self, hostname, local_gpu_info, port=47100):
+    def __init__(self, hostname, local_gpu_info, port=47100,
+                 link_speed=0, link_speed_max=0):
         self.hostname = hostname
         self.local_gpu_info = local_gpu_info
         self.port = port
@@ -33,8 +34,10 @@ class GossipNode:
 
         self.seq = 0
         self._lock = threading.Lock()
-        self._cluster = {}  # {node_id: {gpus, timestamp, seq, last_seen, ip, net_kbps}}
+        self._cluster = {}  # {node_id: {gpus, timestamp, seq, last_seen, ip, net_kbps, ...}}
         self._net_kbps = 0.0  # local node's AppComm rate, set by server push loop
+        self._link_speed = link_speed
+        self._link_speed_max = link_speed_max
 
         self._mcast_send_sock = None
         self._mcast_recv_sock = None
@@ -83,6 +86,9 @@ class GossipNode:
             "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
             "status": "online",
             "net_kbps": self._net_kbps,
+            "epoch": time.time(),
+            "link_speed": self._link_speed,
+            "link_speed_max": self._link_speed_max,
         })
 
         with self._lock:
@@ -101,6 +107,9 @@ class GossipNode:
                     "timestamp": info["timestamp"],
                     "status": status,
                     "net_kbps": info.get("net_kbps", 0.0),
+                    "epoch": info.get("epoch", 0),
+                    "link_speed": info.get("link_speed", 0),
+                    "link_speed_max": info.get("link_speed_max", 0),
                 })
 
         return nodes
@@ -156,6 +165,9 @@ class GossipNode:
                 "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
                 "seq": self.seq,
                 "net_kbps": self._net_kbps,
+                "epoch": time.time(),
+                "link_speed": self._link_speed,
+                "link_speed_max": self._link_speed_max,
             }
             try:
                 data = json.dumps(msg).encode("utf-8")
@@ -217,6 +229,9 @@ class GossipNode:
                     "last_seen": time.time(),
                     "ip": addr[0] if addr else "",
                     "net_kbps": msg.get("net_kbps", 0.0),
+                    "epoch": msg.get("epoch", 0),
+                    "link_speed": msg.get("link_speed", 0),
+                    "link_speed_max": msg.get("link_speed_max", 0),
                 }
 
     # ------------------------------------------------------------------
@@ -276,6 +291,9 @@ class GossipNode:
                         "timestamp": info["timestamp"],
                         "seq": info["seq"],
                         "net_kbps": info.get("net_kbps", 0.0),
+                        "epoch": info.get("epoch", 0),
+                        "link_speed": info.get("link_speed", 0),
+                        "link_speed_max": info.get("link_speed_max", 0),
                     })
 
         # Include self if the requester is behind
@@ -286,6 +304,9 @@ class GossipNode:
                 "timestamp": time.strftime("%d%b%y %H:%M:%S").upper() + "utc",
                 "seq": self.seq,
                 "net_kbps": self._net_kbps,
+                "epoch": time.time(),
+                "link_speed": self._link_speed,
+                "link_speed_max": self._link_speed_max,
             })
 
         if updates:

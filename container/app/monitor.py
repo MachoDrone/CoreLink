@@ -5,6 +5,8 @@ No external dependencies — stdlib only.
 """
 
 import os
+import re
+import subprocess
 import time
 
 
@@ -16,12 +18,18 @@ class AppMonitor:
         self._prev_cpu_total = 0
         self._prev_io_net = 0
         self._prev_time = 0.0
+        self._default_iface = self._get_default_iface()
         self._link_speed = self._detect_link_speed()
+        self._link_speed_max = self._detect_max_speed(self._default_iface)
+        # Graceful degradation: if ethtool failed but negotiated > 0, treat as max
+        if self._link_speed_max == 0 and self._link_speed > 0:
+            self._link_speed_max = self._link_speed
         self._metrics = {
             "cpu": 0.0,
             "ram": 0.0,
             "net_mbps": 0.0,
             "link_speed": self._link_speed,
+            "link_speed_max": self._link_speed_max,
             "disk": 0.0,
         }
         # Prime the deltas with an initial read
@@ -162,34 +170,52 @@ class AppMonitor:
         return round(mbps, 3)
 
     # ------------------------------------------------------------------
-    # Link speed — first physical up interface
+    # Link speed — default-route interface
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _detect_link_speed():
-        """Auto-detect negotiated link speed (Mbps) of first physical NIC."""
+    def _get_default_iface():
+        """Return the interface carrying the default route (cluster traffic)."""
         try:
-            net_dir = "/sys/class/net"
-            for iface in sorted(os.listdir(net_dir)):
-                # Skip loopback and virtual interfaces
-                if iface == "lo" or iface.startswith("veth") or iface.startswith("docker") or iface.startswith("br-"):
-                    continue
-                # Must be up
-                try:
-                    with open(os.path.join(net_dir, iface, "operstate")) as f:
-                        if f.read().strip() != "up":
-                            continue
-                except IOError:
-                    continue
-                # Read speed
-                try:
-                    with open(os.path.join(net_dir, iface, "speed")) as f:
-                        speed = int(f.read().strip())
-                    if speed > 0:
-                        return speed
-                except (IOError, ValueError):
-                    continue
-        except OSError:
+            with open("/proc/net/route") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 2 and parts[1] == "00000000":
+                        return parts[0]
+        except (IOError, OSError):
+            pass
+        return None
+
+    def _detect_link_speed(self):
+        """Auto-detect negotiated link speed (Mbps) of default-route NIC."""
+        iface = self._default_iface
+        if not iface:
+            return 0
+        try:
+            with open("/sys/class/net/%s/speed" % iface) as f:
+                speed = int(f.read().strip())
+            if speed > 0:
+                return speed
+        except (IOError, ValueError, OSError):
+            pass
+        return 0
+
+    @staticmethod
+    def _detect_max_speed(iface):
+        """Detect max supported link speed (Mbps) via ethtool."""
+        if not iface:
+            return 0
+        try:
+            result = subprocess.run(
+                ["ethtool", iface],
+                capture_output=True, text=True, timeout=5,
+            )
+            if result.returncode != 0:
+                return 0
+            speeds = re.findall(r"(\d+)base", result.stdout)
+            if speeds:
+                return max(int(s) for s in speeds)
+        except (OSError, subprocess.TimeoutExpired, ValueError):
             pass
         return 0
 

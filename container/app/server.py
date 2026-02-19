@@ -17,7 +17,7 @@ from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
 
-VERSION = "0.00.7"
+VERSION = "0.00.8"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -71,13 +71,16 @@ _hostname = os.environ.get("CORELINK_HOSTNAME", socket.gethostname())
 _gpu_info = get_local_gpu_info()
 _gossip_port = int(os.environ.get("CORELINK_GOSSIP_PORT", "47100"))
 
+monitor = AppMonitor()
+_metrics = monitor.get_metrics()
+
 gossip = GossipNode(
     hostname=_hostname,
     local_gpu_info=_gpu_info,
     port=_gossip_port,
+    link_speed=_metrics.get("link_speed", 0),
+    link_speed_max=_metrics.get("link_speed_max", 0),
 )
-
-monitor = AppMonitor()
 
 
 # ---------------------------------------------------------------------------

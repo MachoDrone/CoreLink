@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.00.8 — 2026-02-19
+- Rename status line from "Cluster Status" to "Fleet" with PC/Host counts and singular/plural logic
+- Add NIC column between GPUid and Model showing color-coded negotiated link speed (red ≤1G, yellow <max, green =max)
+- Detect default-route interface via `/proc/net/route` instead of "first physical up NIC" heuristic
+- Detect max NIC speed via `ethtool` (new Dockerfile package); graceful fallback if unavailable
+- Add "Time Synch?" column showing timestamp plus green ✓ or red ✗ based on 15-second epoch drift
+- Add `epoch`, `link_speed`, `link_speed_max` fields to gossip heartbeat, cluster state, and anti-entropy
+- Merge hostname into connection badge (e.g. "myhost connected") — remove standalone hostname text
+- Show `---` on subsequent GPU rows for NIC and AppComm columns (was blank)
+- Reorder server.py init: monitor created before gossip so link speeds can be passed to GossipNode
+- Backward compatible: older v0.00.7 nodes default to 0 for new fields; UI shows "?" / empty for unknowns
+- Bump version to 0.00.8 in corelink.py, server.py, and README.md
+
 ## v0.00.7 — 2026-02-18
 - Add AppComm column to GPU table showing per-node CoreLink network throughput (Kbps)
 - Add LAN Saturation metric summing all online nodes' AppComm values (displayed in Mbps)
