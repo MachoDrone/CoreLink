@@ -17,7 +17,7 @@ from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
 
-VERSION = "0.00.9"
+VERSION = "0.01.0"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -43,8 +43,8 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
-# Flask-SocketIO (threading mode with simple-websocket)
-socketio = SocketIO(app, async_mode="threading")
+# Flask-SocketIO (eventlet async mode for native WebSocket support)
+socketio = SocketIO(app, async_mode="eventlet")
 
 # Flask-Login
 login_manager = LoginManager()
@@ -231,7 +231,7 @@ if __name__ == "__main__":
         app,
         host="0.0.0.0",
         port=args.port,
-        ssl_context=(ssl_cert, ssl_key),
-        allow_unsafe_werkzeug=True,
+        certfile=ssl_cert,
+        keyfile=ssl_key,
         log_output=True,
     )

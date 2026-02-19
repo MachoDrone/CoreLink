@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.01.0 — 2026-02-19
+- Fix WebSocket 500 error (`write() before start_response`) on every page load
+- Switch Flask-SocketIO backend from `simple-websocket` (threading) to `eventlet` for native WebSocket support
+- Remove `allow_unsafe_werkzeug=True` — eventlet provides its own WSGI server
+- Replace `simple-websocket` with `eventlet>=0.33.0` in requirements.txt
+- Update CLAUDE.md to reflect new async mode convention
+- Bump version to 0.01.0 in corelink.py, server.py, and README.md
+
 ## v0.00.9 — 2026-02-19
 - Replace browser-based time sync check with real NTP verification against `pool.ntp.org`
 - New SNTP client in `monitor.py`: 48-byte UDP query, refreshes drift every 60s

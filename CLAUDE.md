@@ -58,12 +58,12 @@ On first `--start`, the host script generates a local CA in `~/.corelink/ca/` an
 - **Version string** appears in: `corelink.py` (line ~20, `VERSION`), `container/app/templates/base.html`, and `README.md` header. Update all three when bumping.
 - **REPO_RAW_URL** in `corelink.py` (line ~25) controls where curl-pipe mode fetches container files. Must point to the correct branch.
 - **Frontend assets** (Bootstrap, Socket.IO JS) are downloaded during `docker build` and bundled — no CDN calls at runtime.
-- **Threading mode**: Flask-SocketIO uses `simple-websocket` backend, not eventlet/gevent. All concurrency is via Python threads.
+- **Async mode**: Flask-SocketIO uses `eventlet` backend for native WebSocket support. Eventlet monkey-patches stdlib to use cooperative green threads; existing daemon threads (gossip, monitor) work unchanged.
 
 ## Tech Stack
 - Host script: Pure Python 3.8+ stdlib (no pip)
 - Container base: nvidia/cuda:12.2.0-base-ubuntu22.04
-- Web: Flask + Flask-SocketIO (threading mode, simple-websocket)
+- Web: Flask + Flask-SocketIO (eventlet async mode)
 - Auth: python-pam + Flask-Login
 - Frontend: Bootstrap 5 (bundled), Socket.IO 4.7.5 client
 - Gossip: UDP multicast 239.77.77.77:47100, unicast 47101
