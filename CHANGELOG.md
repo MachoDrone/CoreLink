@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.00.7 — 2026-02-18
+- Add AppComm column to GPU table showing per-node CoreLink network throughput (Kbps)
+- Add LAN Saturation metric summing all online nodes' AppComm values (displayed in Mbps)
+- Gossip heartbeat now includes `net_kbps` field; propagated via anti-entropy digest exchanges
+- New `set_net_kbps()` method on GossipNode, fed by server push loop every 3s
+- Merge CoreLink Resources line into Cluster Status line (removed standalone div)
+- Drop `Net: x / y Mbps` format; replaced with `LAN Saturation: x.xxx Mbps`
+- Increase monitor precision: CPU 1→2 dp, RAM 1→2 dp, Net 1→3 dp
+- Bump version to 0.00.7 in corelink.py, server.py, and README.md
+
 ## v0.00.6 — 2026-02-18
 - Add self-monitoring resource display above cluster status line
 - New `monitor.py` module: collects app-only CPU %, RAM %, network Mbps, and disk %

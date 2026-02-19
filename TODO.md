@@ -8,3 +8,10 @@
 - Add sorting/filtering to GPU table
 - Consider adding node uptime or last-seen column
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
+- Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
+
+## Completed — v0.00.7
+- Add AppComm column with per-node net_kbps via gossip
+- Add LAN Saturation aggregate metric to status line
+- Merge CoreLink Resources into Cluster Status line
+- Increase CPU/RAM/Net decimal precision in monitor.py
