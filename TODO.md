@@ -9,7 +9,11 @@
 - Consider adding node uptime or last-seen column
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
-- Fix WebSocket 500 error on initial connect (Werkzeug `write() before start_response` with simple-websocket)
+
+## Completed — v0.01.0
+- Fix WebSocket 500 error by switching from simple-websocket to eventlet
+- Replace `ssl_context` with eventlet-compatible `certfile`/`keyfile` params
+- ~15-30% reduction in per-node AppComm kbps (expected: WebSocket has less overhead than HTTP long-polling)
 
 ## Completed — v0.00.9
 - Replace browser-based time sync with real NTP verification (SNTP query to pool.ntp.org)

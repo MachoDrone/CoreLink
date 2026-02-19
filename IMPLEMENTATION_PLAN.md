@@ -1,7 +1,7 @@
 CoreLink Implementation PlanContext
 CoreLink is a GPU cluster communication framework. An empty corelink.py and stub README.md exist in the repo. We need to build the complete system from scratch: a host launcher script, a Docker container with an HTTPS web console, PAM authentication, GPU discovery, and a gossip protocol for LAN-wide node status sharing across up to 254 machines.
 Architecture Decisions
-DecisionChoiceRationaleHost scriptPure Python 3.8+ stdlibNo pip on host; must work via python3 <(curl ...)Container basenvidia/cuda:12.2.0-base-ubuntu22.04Provides nvidia-smi; base variant keeps image smallWeb frameworkFlask + Flask-SocketIO (threading mode)Well-tested, extensible, async Socket.IO for real-time UIWebSocketsimple-websocketReplaces deprecated eventlet; recommended by Flask-SocketIO maintainerAuthpython-pam + Flask-LoginPAM delegates to host OS; Flask-Login handles sessions/remember-meFrontendBootstrap 5 (bundled in container)No CDN calls at runtime; offline-capableGossipUDP multicast heartbeats + anti-entropy digest exchangeLow bandwidth, fast convergence, single-subnet optimizedNetworking--network hostRequired for UDP multicast; container shares host networkHTTPSSelf-signed cert via openssl in entrypointGenerated on first run, persisted in Docker volumeWSGI serverFlask dev server via socketio.run()Simple, handles WebSocket natively with simple-websocket; adequate for admin panel with few concurrent users
+DecisionChoiceRationaleHost scriptPure Python 3.8+ stdlibNo pip on host; must work via python3 <(curl ...)Container basenvidia/cuda:12.2.0-base-ubuntu22.04Provides nvidia-smi; base variant keeps image smallWeb frameworkFlask + Flask-SocketIO (eventlet mode)Well-tested, extensible, async Socket.IO for real-time UIWebSocketeventlet>=0.33.0Native WebSocket support; eliminates Werkzeug write() before start_response 500 errorsAuthpython-pam + Flask-LoginPAM delegates to host OS; Flask-Login handles sessions/remember-meFrontendBootstrap 5 (bundled in container)No CDN calls at runtime; offline-capableGossipUDP multicast heartbeats + anti-entropy digest exchangeLow bandwidth, fast convergence, single-subnet optimizedNetworking--network hostRequired for UDP multicast; container shares host networkHTTPSSelf-signed cert via openssl in entrypointGenerated on first run, persisted in Docker volumeWSGI serverEventlet WSGI via socketio.run()Native WebSocket, no Werkzeug dev server needed; adequate for admin panel with few concurrent users
 Files to Create/Modify
 1. /home/user/CoreLink/corelink.py — Host Launcher (~300 lines)
 
@@ -23,7 +23,7 @@ Copy app code, set entrypoint
 flask
 flask-socketio
 flask-login
-simple-websocket
+eventlet>=0.33.0
 python-pam
 4. /home/user/CoreLink/container/entrypoint.sh
 
@@ -33,7 +33,7 @@ Launch python3 /app/server.py
 
 5. /home/user/CoreLink/container/app/server.py — Flask App (~120 lines)
 
-Flask + SocketIO setup with threading async mode
+Flask + SocketIO setup with eventlet async mode
 Flask-Login integration with user_loader reading /etc/passwd
 Routes: / (console, login_required), /login, /logout
 SocketIO events: connect (reject unauthenticated), background task pushing cluster_state every 3s
