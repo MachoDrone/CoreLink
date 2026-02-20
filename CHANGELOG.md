@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.02.0 — 2026-02-19
+- Add "GPU Limit" column showing PCIe bottleneck as `X.0 x Y` (gen x width)
+- Query `pcie.link.gen.max` and `pcie.link.width.max` from nvidia-smi (effective max considering GPU + slot)
+- Graceful fallback to `0.0 x 0` if PCIe fields are missing or unparseable
+- New column appears between GPUid and NIC in the cluster table
+- Data propagates automatically through gossip protocol — no gossip.py changes needed
+- Bump version to 0.02.0 in corelink.py, server.py, and README.md
+
 ## v0.01.0 — 2026-02-19
 - Fix WebSocket 500 error (`write() before start_response`) on every page load
 - Switch Flask-SocketIO backend from `simple-websocket` (threading) to `eventlet` for native WebSocket support

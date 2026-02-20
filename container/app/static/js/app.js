@@ -82,6 +82,7 @@
                 html += "<tr class=\"" + rowClass + "\">"
                       + "<td>" + esc(node.node_id) + "</td>"
                       + "<td>\u2014</td>"
+                      + "<td>\u2014</td>"
                       + "<td>" + nicHtml + "</td>"
                       + "<td>\u2014</td>"
                       + "<td>" + esc(node.timestamp) + tsIndicator + "</td>"
@@ -92,6 +93,7 @@
                     html += "<tr class=\"" + rowClass + "\">"
                           + "<td>" + esc(node.node_id) + "</td>"
                           + "<td>" + gpus[g].id + "</td>"
+                          + "<td>" + esc(gpus[g].limit || "0.0 x 0") + "</td>"
                           + "<td>" + (g === 0 ? nicHtml : "---") + "</td>"
                           + "<td>" + esc(gpus[g].model) + "</td>"
                           + "<td>" + esc(node.timestamp) + tsIndicator + "</td>"
@@ -102,7 +104,7 @@
         }
 
         if (html === "") {
-            html = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+            html = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
                  + "No nodes detected yet...</td></tr>";
         }
 

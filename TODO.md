@@ -10,6 +10,10 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.02.0
+- Add "GPU Limit" column showing PCIe bottleneck (gen x width) from nvidia-smi
+- Graceful fallback to `0.0 x 0` for missing/unparseable PCIe fields
+
 ## Completed — v0.01.0
 - Fix WebSocket 500 error by switching from simple-websocket to eventlet
 - Replace `ssl_context` with eventlet-compatible `certfile`/`keyfile` params
