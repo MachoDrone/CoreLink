@@ -8,6 +8,10 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.03.0
+- Fix GPU Limit to show true PCIe bottleneck (min of GPU and slot capability) via sysfs
+- Replaces nvidia-smi-only approach that missed slot lane restrictions
+
 ## Completed — v0.02.0
 - Add "GPU Limit" column showing PCIe bottleneck (gen x width) from nvidia-smi
 - Graceful fallback to `0.0 x 0` for missing/unparseable PCIe fields

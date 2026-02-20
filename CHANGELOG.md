@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.03.0 — 2026-02-20
+- Fix GPU Limit showing GPU-only max instead of actual PCIe bottleneck
+- Replace nvidia-smi `pcie.link.gen.max`/`pcie.link.width.max` with sysfs-based detection
+- Read both GPU and parent slot capabilities via `/sys/bus/pci/devices/`, take minimum
+- Correctly reports slot-limited lanes (e.g., x1, x4) instead of always showing x16
+- Pure sysfs — no additional packages needed (no lspci/pciutils)
+- Bump version to 0.03.0 in corelink.py, server.py, and README.md
+
 ## v0.02.0 — 2026-02-19
 - Add "GPU Limit" column showing PCIe bottleneck as `X.0 x Y` (gen x width)
 - Query `pcie.link.gen.max` and `pcie.link.width.max` from nvidia-smi (effective max considering GPU + slot)
