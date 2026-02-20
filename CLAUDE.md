@@ -30,6 +30,7 @@ There are no unit tests, linters, or CI pipelines. Validation is manual: build, 
 - Branch naming: `git checkout -b <type>/<short-description>` using prefixes: `fix/`, `feat/`, `refactor/`, `docs/`, `chore/`
 - Always use `gh pr create` to open PRs. Never merge locally.
 - After creating a PR, report the PR URL and **STOP** — do not merge.
+- **NEVER merge a PR** unless the user has explicitly confirmed testing on all 3 cluster nodes (nn01, nn03, nn05). If the user says "merge it" without confirming tests, **refuse and remind them** to test first. A casual "merge it" is NOT sufficient — require explicit confirmation like "tested on all nodes, merge it."
 - **Verbose git descriptions**: When proposing ANY git action, always name the specific branch and target. Example: "Push branch `fix/gossip-timeout` to origin and create PR targeting main" — never say "push it" or "send it".
 - Workflow sequence: `git pull origin main` → `git checkout -b <type>/<desc>` → make changes → `git add` + `git commit` on the branch → `git push -u origin <branch>` → `gh pr create` → report URL.
 
