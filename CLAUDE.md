@@ -83,3 +83,4 @@ On first `--start`, the host script generates a local CA in `~/.corelink/ca/` an
 - See IMPLEMENTATION_PLAN.md for current roadmap. Update it as tasks are completed.
 - See CHANGELOG.md for version history. Append to it with each delivery.
 - See TODO.md for outstanding items.
+- **All tracking docs (CHANGELOG.md, TODO.md, IMPLEMENTATION_PLAN.md) MUST be updated in the same feature branch as the code change, BEFORE creating the PR.** Never create a separate PR just for tracking updates.
