@@ -24,7 +24,7 @@ import urllib.error
 VERSION = "0.01.7"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
-REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/main"
+REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/fix/gossip-eventlet-starvation"
 
 CA_DIR = os.path.join(os.path.expanduser("~"), ".corelink", "ca")
 CA_CERT_PATH = os.path.join(CA_DIR, "ca.pem")
