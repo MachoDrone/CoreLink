@@ -4,8 +4,8 @@ CoreLink - GPU Cluster Communication Framework
 
 Usage:
   python3 corelink.py [options]
-  python3 <(curl -sL https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU/corelink.py) [options]
-  python3 <(wget -qO- https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU/corelink.py) [options]
+  python3 <(curl -sL https://raw.githubusercontent.com/MachoDrone/CoreLink/main/corelink.py) [options]
+  python3 <(wget -qO- https://raw.githubusercontent.com/MachoDrone/CoreLink/main/corelink.py) [options]
 """
 
 import argparse
@@ -24,7 +24,7 @@ import urllib.error
 VERSION = "0.02.0"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
-REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU"
+REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/main"
 
 CA_DIR = os.path.join(os.path.expanduser("~"), ".corelink", "ca")
 CA_CERT_PATH = os.path.join(CA_DIR, "ca.pem")
@@ -596,7 +596,7 @@ def main():
   %(prog)s --start --port 8443  Start on a custom port
 
 Remote one-liner:
-  python3 <(curl -sL https://raw.githubusercontent.com/MachoDrone/CoreLink/claude/add-usage-examples-fh9kU/corelink.py) --start
+  python3 <(curl -sL https://raw.githubusercontent.com/MachoDrone/CoreLink/main/corelink.py) --start
 """,
     )
 
