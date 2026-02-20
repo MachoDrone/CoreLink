@@ -143,6 +143,18 @@ tr.node-stale {
     color: var(--cl-danger);
 }
 
+/* ---- Info tooltip icons ---- */
+
+.cl-info {
+    cursor: help;
+    opacity: 0.5;
+    font-size: 0.75em;
+    vertical-align: super;
+}
+.cl-info:hover {
+    opacity: 1;
+}
+
 /* ---- Misc ---- */
 
 .tab-content {

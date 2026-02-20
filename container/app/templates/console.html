@@ -47,13 +47,13 @@
             <table class="table table-sm table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>PC</th>
-                        <th>GPUid</th>
-                        <th>GPU Limit</th>
-                        <th>NIC</th>
-                        <th>Model</th>
-                        <th>Time Synch?</th>
-                        <th>AppComm</th>
+                        <th>PC <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Computer Name">&#9432;</span></th>
+                        <th>GPUid <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Local GPU slot index on this PC">&#9432;</span></th>
+                        <th>Bottleneck <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="PCIe generation and lane width (bottleneck of GPU capability vs motherboard slot)">&#9432;</span></th>
+                        <th>NIC <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Negotiated network link speed. Green = max, yellow = below max, red = 1G or slower">&#9432;</span></th>
+                        <th>Model <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="NVIDIA GPU model name">&#9432;</span></th>
+                        <th>NTP Sync <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Node timestamp and NTP sync status. Green checkmark = drift within 2 seconds">&#9432;</span></th>
+                        <th>CoreLink I/O <span class="cl-info" data-bs-toggle="tooltip" data-bs-placement="top" title="CoreLink network traffic for this node in Kbps">&#9432;</span></th>
                     </tr>
                 </thead>
                 <tbody id="gpu-table-body">

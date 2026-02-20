@@ -1,6 +1,6 @@
 # CoreLink
 
-GPU Cluster Communication Framework — v0.01.5
+GPU Cluster Communication Framework — v0.01.6
 
 CoreLink discovers NVIDIA GPUs on every machine in your LAN, shares the
 information via a lightweight gossip protocol, and presents it through a

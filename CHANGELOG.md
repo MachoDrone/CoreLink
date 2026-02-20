@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.01.6 — 2026-02-20
+- Rename column headers: "GPU Limit" → "Bottleneck", "Time Synch?" → "NTP Sync", "AppComm" → "CoreLink I/O"
+- Add info tooltip icons (ⓘ) to all seven column headers with descriptive hover text
+- New `.cl-info` CSS class for subtle tooltip icon styling (half-opacity, full on hover)
+- Initialize Bootstrap tooltips in app.js for header info icons
+- Bump version to 0.01.6 in corelink.py, server.py, and README.md
+
 ## v0.01.5 — 2026-02-20
 - Fix versioning scheme: correct all historical versions (0.02.0→0.01.1, 0.03.0→0.01.2, 0.04.0→0.01.3, 0.05.0→0.01.4)
 - Add permanent versioning rules to ~/.claude/CLAUDE.md and project CLAUDE.md
