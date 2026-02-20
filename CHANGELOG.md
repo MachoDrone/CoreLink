@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.05.0 — 2026-02-20
+- Remove third-party data relay from gossip anti-entropy responses
+- Anti-entropy now only sends the responder's own fresh data, never cached third-party state
+- Eliminates stale data oscillation where peers re-broadcast old values after node restart
+- Revert v0.04.0 `direct` flag logic in `_process_heartbeat` back to simpler `seq > existing` check
+- Bump version to 0.05.0 in corelink.py, server.py, and README.md
+
 ## v0.04.0 — 2026-02-20
 - Fix gossip anti-entropy replaying stale data after node restart
 - Direct heartbeats now always accepted (handles seq reset on restart)

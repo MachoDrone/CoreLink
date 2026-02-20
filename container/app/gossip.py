@@ -1,8 +1,9 @@
 """CoreLink - Gossip protocol for GPU cluster state sharing.
 
 Uses UDP multicast heartbeats for fast dissemination and anti-entropy
-digest exchanges for guaranteed convergence across up to 254 nodes on
-a single subnet.
+digest exchanges for convergence across up to 254 nodes on a single
+subnet.  Anti-entropy only relays self data — never cached third-party
+state — to prevent stale data oscillation after node restarts.
 """
 
 import json
@@ -227,19 +228,9 @@ class GossipNode:
             return
 
         seq = msg.get("seq", 0)
-        direct = addr is not None  # True if from network, False if from anti-entropy
         with self._lock:
             existing = self._cluster.get(node_id)
-            if existing is None:
-                accept = True
-            elif direct:
-                # Direct heartbeats always win — handles seq reset on restart
-                accept = True
-            else:
-                # Anti-entropy updates only accepted if seq advances
-                accept = seq > existing.get("seq", 0)
-
-            if accept:
+            if existing is None or seq > existing.get("seq", 0):
                 self._cluster[node_id] = {
                     "gpus": msg.get("gpus", []),
                     "timestamp": msg.get("timestamp", ""),
@@ -294,29 +285,16 @@ class GossipNode:
                 pass
 
     def _process_digest_request(self, msg, addr):
-        """Respond only if we are the target."""
+        """Respond only if we are the target.  Only send self data — never
+        relay cached third-party node data (avoids stale data oscillation).
+        """
         if msg.get("target") != self.hostname:
             return
 
         their_digest = msg.get("digest", {})
         updates = []
 
-        with self._lock:
-            for nid, info in self._cluster.items():
-                if info["seq"] > their_digest.get(nid, 0):
-                    updates.append({
-                        "node_id": nid,
-                        "gpus": info["gpus"],
-                        "timestamp": info["timestamp"],
-                        "seq": info["seq"],
-                        "net_kbps": info.get("net_kbps", 0.0),
-                        "epoch": info.get("epoch", 0),
-                        "link_speed": info.get("link_speed", 0),
-                        "link_speed_max": info.get("link_speed_max", 0),
-                        "ntp_drift": info.get("ntp_drift"),
-                    })
-
-        # Include self if the requester is behind
+        # Only include our own fresh data — no third-party relay
         if self.seq > their_digest.get(self.hostname, 0):
             updates.append({
                 "node_id": self.hostname,

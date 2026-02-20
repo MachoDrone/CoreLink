@@ -8,6 +8,9 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.05.0
+- Remove third-party data relay from anti-entropy — only send self data, eliminates stale oscillation
+
 ## Completed — v0.04.0
 - Fix gossip anti-entropy replaying stale cached data after node restart
 
