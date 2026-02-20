@@ -8,6 +8,9 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.04.0
+- Fix gossip anti-entropy replaying stale cached data after node restart
+
 ## Completed — v0.03.0
 - Fix GPU Limit to show true PCIe bottleneck (min of GPU and slot capability) via sysfs
 - Replaces nvidia-smi-only approach that missed slot lane restrictions

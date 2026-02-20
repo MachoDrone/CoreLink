@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.04.0 — 2026-02-20
+- Fix gossip anti-entropy replaying stale data after node restart
+- Direct heartbeats now always accepted (handles seq reset on restart)
+- Anti-entropy relayed updates only accepted if seq advances (prevents stale overwrite)
+- Bump version to 0.04.0 in corelink.py, server.py, and README.md
+
 ## v0.03.0 — 2026-02-20
 - Fix GPU Limit showing GPU-only max instead of actual PCIe bottleneck
 - Replace nvidia-smi `pcie.link.gen.max`/`pcie.link.width.max` with sysfs-based detection

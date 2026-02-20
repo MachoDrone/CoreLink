@@ -227,15 +227,25 @@ class GossipNode:
             return
 
         seq = msg.get("seq", 0)
+        direct = addr is not None  # True if from network, False if from anti-entropy
         with self._lock:
             existing = self._cluster.get(node_id)
-            if existing is None or seq > existing.get("seq", 0):
+            if existing is None:
+                accept = True
+            elif direct:
+                # Direct heartbeats always win — handles seq reset on restart
+                accept = True
+            else:
+                # Anti-entropy updates only accepted if seq advances
+                accept = seq > existing.get("seq", 0)
+
+            if accept:
                 self._cluster[node_id] = {
                     "gpus": msg.get("gpus", []),
                     "timestamp": msg.get("timestamp", ""),
                     "seq": seq,
                     "last_seen": time.time(),
-                    "ip": addr[0] if addr else "",
+                    "ip": addr[0] if addr else existing.get("ip", "") if existing else "",
                     "net_kbps": msg.get("net_kbps", 0.0),
                     "epoch": msg.get("epoch", 0),
                     "link_speed": msg.get("link_speed", 0),
