@@ -3,6 +3,11 @@
 (function () {
     "use strict";
 
+    // ---- Initialize Bootstrap tooltips ----
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        new bootstrap.Tooltip(el);
+    });
+
     // ---- Socket.IO connection (prefer WebSocket) ----
     var socket = io({transports: ["websocket", "polling"]});
 

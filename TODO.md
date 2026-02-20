@@ -8,6 +8,10 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.01.6
+- Rename columns: "GPU Limit" → "Bottleneck", "Time Synch?" → "NTP Sync", "AppComm" → "CoreLink I/O"
+- Add info tooltip icons to all seven column headers with descriptive hover text
+
 ## Completed — v0.01.5
 - Fix versioning scheme: correct all historical version numbers and add permanent versioning rules
 

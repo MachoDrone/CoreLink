@@ -17,7 +17,7 @@ from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
 
-VERSION = "0.01.5"
+VERSION = "0.01.6"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
