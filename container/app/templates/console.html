@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="navbar navbar-dark border-bottom border-secondary px-3">
+    <div class="d-flex align-items-baseline">
+        <span class="navbar-brand fw-bold mb-0">CoreLink</span>
+        <small class="text-muted ms-1" style="font-size: 0.6rem;">v{{ version }}</small>
+    </div>
+    <div class="d-flex align-items-center">
+        <span class="text-muted small me-3">{{ username }}</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
+    </div>
+</nav>
+
+<!-- Tab bar -->
+<div class="px-3 pt-2">
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="test-tab" data-bs-toggle="tab"
+                    data-bs-target="#tab-test" type="button" role="tab"
+                    aria-controls="tab-test" aria-selected="true">Test</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reserved-tab" data-bs-toggle="tab"
+                    data-bs-target="#tab-reserved" type="button" role="tab"
+                    aria-controls="tab-reserved" aria-selected="false">Reserved</button>
+        </li>
+    </ul>
+</div>
+
+<!-- Tab content -->
+<div class="tab-content px-3 py-3" id="mainTabContent">
+    <!-- Test tab -->
+    <div class="tab-pane fade show active" id="tab-test" role="tabpanel" aria-labelledby="test-tab">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted" style="font-size: 0.7rem;">
+                Fleet &mdash; <span id="node-count">0 PCs, 0 Hosts</span>
+                &emsp;&emsp;
+                <span id="app-monitor">CoreLink Resources &mdash; CPU: &mdash;%&ensp; RAM: &mdash;%&ensp; Disk: &mdash;%&ensp; LAN Saturation: &mdash; Mbps</span>
+            </span>
+            <span style="font-size: 0.7rem;">
+                <span id="connection-status" class="badge bg-secondary" style="font-size: 0.7rem;" data-hostname="{{ hostname }}">{{ hostname }} connecting...</span>
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>PC</th>
+                        <th>GPUid</th>
+                        <th>GPU Limit</th>
+                        <th>NIC</th>
+                        <th>Model</th>
+                        <th>Time Synch?</th>
+                        <th>AppComm</th>
+                    </tr>
+                </thead>
+                <tbody id="gpu-table-body">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Waiting for data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Reserved tab -->
+    <div class="tab-pane fade" id="tab-reserved" role="tabpanel" aria-labelledby="reserved-tab">
+        <p class="text-muted mt-3">Reserved for future use.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/js/socket.io.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}
