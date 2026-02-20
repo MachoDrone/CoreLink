@@ -55,7 +55,7 @@ On first `--start`, the host script generates a local CA in `~/.corelink/ca/` an
 - **Container**: Docker named volume `corelink-data` at `/data` stores Flask secret key (`/data/secret_key`). TLS certs are bind-mounted from the host.
 
 ## Key Conventions
-- **Version string** appears in: `corelink.py` (line ~20, `VERSION`), `container/app/templates/base.html`, and `README.md` header. Update all three when bumping.
+- **Version string** appears in: `corelink.py` (line ~24, `VERSION`), `container/app/server.py` (line ~20, `VERSION`), and `README.md` header. Update all three when bumping. Versioning scheme is `X.YY.Z` — increment Z for each release; Z rolls 0–9 then bump YY (e.g., 0.01.9 → 0.02.0).
 - **REPO_RAW_URL** in `corelink.py` (line ~25) controls where curl-pipe mode fetches container files. Must point to the correct branch.
 - **Frontend assets** (Bootstrap, Socket.IO JS) are downloaded during `docker build` and bundled — no CDN calls at runtime.
 - **Async mode**: Flask-SocketIO uses `eventlet` backend for native WebSocket support. Eventlet monkey-patches stdlib to use cooperative green threads; existing daemon threads (gossip, monitor) work unchanged.

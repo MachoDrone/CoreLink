@@ -1,33 +1,39 @@
 # Changelog
 
-## v0.05.0 — 2026-02-20
+## v0.01.5 — 2026-02-20
+- Fix versioning scheme: correct all historical versions (0.02.0→0.01.1, 0.03.0→0.01.2, 0.04.0→0.01.3, 0.05.0→0.01.4)
+- Add permanent versioning rules to ~/.claude/CLAUDE.md and project CLAUDE.md
+- Scheme: `X.YY.Z` — increment Z for each release; Z rolls 0–9 then bump YY
+- Bump version to 0.01.5 in corelink.py, server.py, and README.md
+
+## v0.01.4 — 2026-02-20
 - Remove third-party data relay from gossip anti-entropy responses
 - Anti-entropy now only sends the responder's own fresh data, never cached third-party state
 - Eliminates stale data oscillation where peers re-broadcast old values after node restart
-- Revert v0.04.0 `direct` flag logic in `_process_heartbeat` back to simpler `seq > existing` check
-- Bump version to 0.05.0 in corelink.py, server.py, and README.md
+- Revert v0.01.3 `direct` flag logic in `_process_heartbeat` back to simpler `seq > existing` check
+- Bump version to 0.01.4 in corelink.py, server.py, and README.md
 
-## v0.04.0 — 2026-02-20
+## v0.01.3 — 2026-02-20
 - Fix gossip anti-entropy replaying stale data after node restart
 - Direct heartbeats now always accepted (handles seq reset on restart)
 - Anti-entropy relayed updates only accepted if seq advances (prevents stale overwrite)
-- Bump version to 0.04.0 in corelink.py, server.py, and README.md
+- Bump version to 0.01.3 in corelink.py, server.py, and README.md
 
-## v0.03.0 — 2026-02-20
+## v0.01.2 — 2026-02-20
 - Fix GPU Limit showing GPU-only max instead of actual PCIe bottleneck
 - Replace nvidia-smi `pcie.link.gen.max`/`pcie.link.width.max` with sysfs-based detection
 - Read both GPU and parent slot capabilities via `/sys/bus/pci/devices/`, take minimum
 - Correctly reports slot-limited lanes (e.g., x1, x4) instead of always showing x16
 - Pure sysfs — no additional packages needed (no lspci/pciutils)
-- Bump version to 0.03.0 in corelink.py, server.py, and README.md
+- Bump version to 0.01.2 in corelink.py, server.py, and README.md
 
-## v0.02.0 — 2026-02-19
+## v0.01.1 — 2026-02-19
 - Add "GPU Limit" column showing PCIe bottleneck as `X.0 x Y` (gen x width)
 - Query `pcie.link.gen.max` and `pcie.link.width.max` from nvidia-smi (effective max considering GPU + slot)
 - Graceful fallback to `0.0 x 0` if PCIe fields are missing or unparseable
 - New column appears between GPUid and NIC in the cluster table
 - Data propagates automatically through gossip protocol — no gossip.py changes needed
-- Bump version to 0.02.0 in corelink.py, server.py, and README.md
+- Bump version to 0.01.1 in corelink.py, server.py, and README.md
 
 ## v0.01.0 — 2026-02-19
 - Fix WebSocket 500 error (`write() before start_response`) on every page load
