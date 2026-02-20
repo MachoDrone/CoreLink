@@ -8,6 +8,10 @@
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
 
+## Completed — v0.01.7
+- Fix gossip thread starvation from eventlet cooperative scheduling (UDP buffer, select timeout, yield point)
+- Relax NTP sync threshold from 2s to 5s to match SNTP precision
+
 ## Completed — v0.01.6
 - Rename columns: "GPU Limit" → "Bottleneck", "Time Synch?" → "NTP Sync", "AppComm" → "CoreLink I/O"
 - Add info tooltip icons to all seven column headers with descriptive hover text

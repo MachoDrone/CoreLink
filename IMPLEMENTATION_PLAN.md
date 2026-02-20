@@ -17,7 +17,7 @@ Key components inside the container:
 
 Container runs with `--network host` (required for UDP multicast), bind-mounts `/etc/passwd`, `/etc/shadow`, `/etc/pam.d` read-only for PAM, and uses a named volume `corelink-data` for persistent state.
 
-## What's Built (through v0.01.6)
+## What's Built (through v0.01.7)
 
 | Version | Highlights |
 |---------|-----------|
@@ -37,6 +37,7 @@ Container runs with `--network host` (required for UDP multicast), bind-mounts `
 | v0.01.4 | Remove third-party data relay from anti-entropy — only send self data |
 | v0.01.5 | Fix versioning scheme, correct all historical versions, add permanent versioning rules |
 | v0.01.6 | Rename columns (Bottleneck, NTP Sync, CoreLink I/O), add info tooltip icons to all table headers |
+| v0.01.7 | Fix gossip thread starvation from eventlet; UDP buffer increase, faster select loop, push loop yield; relax NTP threshold to 5s |
 
 ## Roadmap / Next Steps
 

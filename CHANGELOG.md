@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.01.7 — 2026-02-20
+- Fix gossip thread starvation caused by eventlet cooperative scheduling
+- Increase UDP receive buffer to 2 MB on multicast and unicast gossip sockets
+- Reduce gossip receive loop select() timeout from 1.0s to 0.1s for faster heartbeat processing
+- Add yield point (socketio.sleep(0)) after push loop emit to unblock gossip threads
+- Relax NTP sync threshold from 2s to 5s (SNTP implementation doesn't account for RTT)
+- Update NTP Sync tooltip to reflect 5-second threshold
+- Bump version to 0.01.7 in corelink.py, server.py, and README.md
+
 ## v0.01.6 — 2026-02-20
 - Rename column headers: "GPU Limit" → "Bottleneck", "Time Synch?" → "NTP Sync", "AppComm" → "CoreLink I/O"
 - Add info tooltip icons (ⓘ) to all seven column headers with descriptive hover text

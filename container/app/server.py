@@ -17,7 +17,7 @@ from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
 
-VERSION = "0.01.6"
+VERSION = "0.01.7"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -191,6 +191,7 @@ def _push_cluster_state():
             "nodes": gossip.get_cluster_state(),
             "monitor": metrics,
         })
+        socketio.sleep(0)  # yield to let gossip threads run
 
 
 # ---------------------------------------------------------------------------

@@ -140,7 +140,7 @@
 
     function timeSyncIndicator(ntp_drift) {
         if (ntp_drift == null) return "";
-        if (Math.abs(ntp_drift) <= 2) {
+        if (Math.abs(ntp_drift) <= 5) {
             return " <span style=\"color:var(--cl-success)\">\u2713</span>";
         }
         return " <span style=\"color:var(--cl-danger)\">\u2717</span>";

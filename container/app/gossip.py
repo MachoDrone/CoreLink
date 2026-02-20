@@ -142,6 +142,9 @@ class GossipNode:
         self._mcast_recv_sock.setsockopt(
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1,
         )
+        self._mcast_recv_sock.setsockopt(
+            socket.SOL_SOCKET, socket.SO_RCVBUF, 2 * 1024 * 1024,
+        )
         self._mcast_recv_sock.bind(("", self.port))
         mreq = struct.pack(
             "4sL", socket.inet_aton(MULTICAST_GROUP), socket.INADDR_ANY,
@@ -156,6 +159,9 @@ class GossipNode:
         )
         self._unicast_sock.setsockopt(
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1,
+        )
+        self._unicast_sock.setsockopt(
+            socket.SOL_SOCKET, socket.SO_RCVBUF, 2 * 1024 * 1024,
         )
         self._unicast_sock.bind(("", self.anti_entropy_port))
 
@@ -197,7 +203,7 @@ class GossipNode:
         sockets = [self._mcast_recv_sock, self._unicast_sock]
         while self._running:
             try:
-                readable, _, _ = select.select(sockets, [], [], 1.0)
+                readable, _, _ = select.select(sockets, [], [], 0.1)
             except Exception:
                 continue
 
