@@ -23,6 +23,16 @@ python3 corelink.py --regen-cert     # Force regenerate this node's TLS cert + s
 ```
 There are no unit tests, linters, or CI pipelines. Validation is manual: build, start, log in via browser, check GPU table populates.
 
+## Git Workflow — MANDATORY
+- **NEVER** commit directly to `main`. Always create a feature branch first.
+- **NEVER** push to `main`. Code reaches `main` only via merged PRs on GitHub.
+- A pre-push hook enforces this — direct pushes to `main` are blocked.
+- Branch naming: `git checkout -b <type>/<short-description>` using prefixes: `fix/`, `feat/`, `refactor/`, `docs/`, `chore/`
+- Always use `gh pr create` to open PRs. Never merge locally.
+- After creating a PR, report the PR URL and **STOP** — do not merge.
+- **Verbose git descriptions**: When proposing ANY git action, always name the specific branch and target. Example: "Push branch `fix/gossip-timeout` to origin and create PR targeting main" — never say "push it" or "send it".
+- Workflow sequence: `git pull origin main` → `git checkout -b <type>/<desc>` → make changes → `git add` + `git commit` on the branch → `git push -u origin <branch>` → `gh pr create` → report URL.
+
 ## Architecture
 
 ### Two-Layer Design
