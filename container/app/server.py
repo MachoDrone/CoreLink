@@ -18,7 +18,7 @@ from gpu import get_local_gpu_info
 from monitor import AppMonitor
 from nosana import NosanaProbe
 
-VERSION = "0.01.8"
+VERSION = "0.01.9"
 
 # ---------------------------------------------------------------------------
 # Flask application setup

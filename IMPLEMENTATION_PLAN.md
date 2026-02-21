@@ -39,6 +39,7 @@ Container runs with `--network host` (required for UDP multicast), bind-mounts `
 | v0.01.6 | Rename columns (Bottleneck, NTP Sync, CoreLink I/O), add info tooltip icons to all table headers |
 | v0.01.7 | Fix gossip thread starvation from eventlet; UDP buffer increase, faster select loop, push loop yield; relax NTP threshold to 5s |
 | v0.01.8 | Nosana integration: @nosana/kit probe discovers containers via Docker socket, extracts wallets, queries Solana for status; new Nosana tab replaces Reserved tab; Hosts counter populated |
+| v0.01.9 | Version bump, revert REPO_RAW_URL to main for production, update tracking docs for PR merge |
 
 ## Roadmap / Next Steps
 
@@ -47,3 +48,6 @@ Container runs with `--network host` (required for UDP multicast), bind-mounts `
 - **Node uptime / last-seen column** — show how long each node has been online or when it was last seen
 - **Per-node monitor metrics in cluster table** — show each node's CPU/RAM/network/disk alongside its GPUs
 - **Collapse repeated columns for multi-GPU nodes** — use rowspan or first-row-only rendering for PC/Timestamp columns
+- **Nosana staking info** — display NOS staked, xNOS power from on-chain stake accounts
+- **Nosana market rewards** — show USD/hour and NOS/second reward rates per market
+- **Nosana auth fix** — investigate `undefined:signature` issue with @solana/kit JWT generation

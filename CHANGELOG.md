@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.01.9 — 2026-02-21
+- Bump version to 0.01.9 in corelink.py, server.py, and README.md
+- Revert REPO_RAW_URL from `feat/nosana-integration` branch back to `main` for production
+- Update tracking docs (CHANGELOG.md, TODO.md, IMPLEMENTATION_PLAN.md) for PR merge
+
 ## v0.01.8 — 2026-02-20
 - Integrate @nosana/kit@2.1.5 for Nosana compute node discovery and blockchain status
 - New Node.js probe script (`nosana_probe.mjs`) discovers Nosana containers via Docker socket, extracts wallet addresses, queries Solana for node status (running/queued/idle)

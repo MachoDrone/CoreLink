@@ -6,6 +6,12 @@
 - Consider adding node uptime or last-seen column
 - Consider per-node monitor metrics (show each node's resource usage in the cluster table)
 - Consider collapsing repeated PC/Timestamp columns for multi-GPU nodes (rowspan or first-row-only)
+- Nosana: add staking info (NOS staked, xNOS power) from on-chain stake accounts
+- Nosana: add market reward rates (USD/hour, NOS/second) to dashboard
+- Nosana: investigate auth token generation fix for @solana/kit signers (currently returns `undefined:signature`)
+
+## Completed — v0.01.9
+- Version bump to 0.01.9, revert REPO_RAW_URL to main, update tracking docs
 
 ## Completed — v0.01.8
 - Integrate @nosana/kit for Nosana node discovery and blockchain status in new "Nosana" tab
