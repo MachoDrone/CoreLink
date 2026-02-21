@@ -203,6 +203,17 @@ async function main() {
         // Non-fatal — queue position will be unavailable
     }
 
+    // Fetch market names from REST API (address → human-readable name)
+    let marketNames = {};
+    try {
+        const marketList = await client.api.markets.list();
+        for (const m of marketList) {
+            marketNames[m.address] = m.name || m.slug || m.address;
+        }
+    } catch (err) {
+        // Non-fatal — will fall back to truncated address
+    }
+
     // Process each container independently
     for (const container of containers) {
         const name = (container.Names && container.Names[0] || "").replace(/^\//, "");
@@ -228,6 +239,9 @@ async function main() {
 
             const status = await queryNodeStatus(client, wallet, markets);
             Object.assign(node, status);
+            if (node.market && marketNames[node.market]) {
+                node.market_name = marketNames[node.market];
+            }
         } catch (err) {
             node.error = err.message;
         }

@@ -150,7 +150,9 @@
                 else statusStyle = "opacity: 0.5";
 
                 var marketDisplay = "\u2014";
-                if (nn.market) {
+                if (nn.market_name) {
+                    marketDisplay = esc(nn.market_name);
+                } else if (nn.market) {
                     marketDisplay = nn.market.substring(0, 4) + "..." + nn.market.substring(nn.market.length - 4);
                 }
 
