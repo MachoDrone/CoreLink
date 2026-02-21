@@ -96,7 +96,15 @@ async function queryNodeStatus(client, walletAddress, allMarkets) {
         queue_position: null,
         queue_length: null,
         job: null,
+        duration: null,
+        max_duration: null,
     };
+
+    // Build market lookup by address for jobTimeout
+    const marketByAddr = {};
+    for (const m of allMarkets) {
+        marketByAddr[m.address] = m;
+    }
 
     // Check queue position across all markets (always, regardless of status)
     try {
@@ -106,6 +114,7 @@ async function queryNodeStatus(client, walletAddress, allMarkets) {
                 if (idx !== -1) {
                     result.status = "queued";
                     result.market = market.address || null;
+                    result.max_duration = market.jobTimeout || null;
                     result.queue_position = idx + 1;
                     result.queue_length = market.queue.length;
                     break;
@@ -125,16 +134,24 @@ async function queryNodeStatus(client, walletAddress, allMarkets) {
             result.queue_position = null;
             result.queue_length = null;
 
-            // Get market from job if not already found from queue
-            if (!result.market) {
-                try {
-                    const job = await client.jobs.get(runs[0].job);
-                    if (job && job.market) {
-                        result.market = job.market;
+            // Calculate elapsed duration from run start time
+            if (runs[0].time) {
+                const startSec = Number(runs[0].time);
+                result.duration = Math.floor(Date.now() / 1000) - startSec;
+            }
+
+            // Get market from job to find max_duration
+            try {
+                const job = await client.jobs.get(runs[0].job);
+                if (job && job.market) {
+                    result.market = job.market;
+                    const mkt = marketByAddr[job.market];
+                    if (mkt) {
+                        result.max_duration = mkt.jobTimeout || null;
                     }
-                } catch (e) {
-                    // Non-fatal
                 }
+            } catch (e) {
+                // Non-fatal
             }
         }
     } catch (err) {

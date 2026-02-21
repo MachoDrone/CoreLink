@@ -164,6 +164,13 @@
                     jobDisplay = nn.job.substring(0, 4) + "..." + nn.job.substring(nn.job.length - 4);
                 }
 
+                var durationDisplay = "\u2014";
+                if (nn.duration != null && nn.max_duration != null) {
+                    durationDisplay = fmtDuration(nn.duration) + " / " + fmtDuration(nn.max_duration);
+                } else if (nn.max_duration != null) {
+                    durationDisplay = "\u2014 / " + fmtDuration(nn.max_duration);
+                }
+
                 nHtml += "<tr>"
                     + "<td>" + esc(nn.container || "\u2014") + "</td>"
                     + "<td title=\"" + esc(walletTitle) + "\">" + walletDisplay + "</td>"
@@ -171,18 +178,19 @@
                     + "<td>" + marketDisplay + "</td>"
                     + "<td>" + queueDisplay + "</td>"
                     + "<td>" + jobDisplay + "</td>"
+                    + "<td>" + durationDisplay + "</td>"
                     + "</tr>";
             }
 
             if (nHtml === "") {
                 if (nosanaState.error) {
-                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
                           + esc(nosanaState.error) + "</td></tr>";
                 } else if (nosanaState.last_probe) {
-                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
                           + "No Nosana containers found</td></tr>";
                 } else {
-                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
                           + "Waiting for probe...</td></tr>";
                 }
             }
@@ -211,6 +219,15 @@
         if (speed <= 1000) return "color: var(--cl-danger)";
         if (maxSpeed && speed < maxSpeed) return "color: var(--cl-warning)";
         return "color: var(--cl-success)";
+    }
+
+    function fmtDuration(seconds) {
+        if (seconds == null || seconds < 0) return "\u2014";
+        var h = Math.floor(seconds / 3600);
+        var m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return h + "h " + m + "m";
+        if (m > 0) return m + "m";
+        return seconds + "s";
     }
 
     function timeSyncIndicator(ntp_drift) {
