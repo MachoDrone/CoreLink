@@ -98,21 +98,7 @@ async function queryNodeStatus(client, walletAddress, allMarkets) {
         job: null,
     };
 
-    // Check active runs
-    try {
-        const runs = await client.jobs.runs({ node: walletAddress });
-        if (runs.length > 0) {
-            result.status = "running";
-            result.job = runs[0].job || null;
-            return result;
-        }
-    } catch (err) {
-        result.status = "error";
-        result.error = "runs query failed: " + err.message;
-        return result;
-    }
-
-    // Check queue position across all markets
+    // Check queue position across all markets (always, regardless of status)
     try {
         for (const market of allMarkets) {
             if (market.queueType === MarketQueueType.NODE_QUEUE) {
@@ -122,12 +108,40 @@ async function queryNodeStatus(client, walletAddress, allMarkets) {
                     result.market = market.address || null;
                     result.queue_position = idx + 1;
                     result.queue_length = market.queue.length;
-                    return result;
+                    break;
                 }
             }
         }
     } catch (err) {
-        // Non-fatal — fall through to idle
+        // Non-fatal — continue to check runs
+    }
+
+    // Check active runs
+    try {
+        const runs = await client.jobs.runs({ node: walletAddress });
+        if (runs.length > 0) {
+            result.status = "running";
+            result.job = runs[0].job || null;
+            result.queue_position = null;
+            result.queue_length = null;
+
+            // Get market from job if not already found from queue
+            if (!result.market) {
+                try {
+                    const job = await client.jobs.get(runs[0].job);
+                    if (job && job.market) {
+                        result.market = job.market;
+                    }
+                } catch (e) {
+                    // Non-fatal
+                }
+            }
+        }
+    } catch (err) {
+        if (result.status === "idle") {
+            result.status = "error";
+            result.error = "runs query failed: " + err.message;
+        }
     }
 
     return result;
