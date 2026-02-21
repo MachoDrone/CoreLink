@@ -11,10 +11,13 @@
     // ---- Socket.IO connection (prefer WebSocket) ----
     var socket = io({transports: ["websocket", "polling"]});
 
-    var tbody        = document.getElementById("gpu-table-body");
-    var nodeCount    = document.getElementById("node-count");
-    var connBadge    = document.getElementById("connection-status");
-    var appMonitor   = document.getElementById("app-monitor");
+    var tbody          = document.getElementById("gpu-table-body");
+    var nodeCount      = document.getElementById("node-count");
+    var connBadge      = document.getElementById("connection-status");
+    var appMonitor     = document.getElementById("app-monitor");
+    var nosanaTbody    = document.getElementById("nosana-table-body");
+    var nosanaCount    = document.getElementById("nosana-count");
+    var nosanaProbeTime = document.getElementById("nosana-probe-time");
 
     var badgeHostname = connBadge ? (connBadge.getAttribute("data-hostname") || "") : "";
 
@@ -53,7 +56,9 @@
         }
         if (nodeCount) {
             var pcLabel = onlineNodes === 1 ? "PC" : "PCs";
-            var hosts = 0;
+            var nosana = data.nosana || {};
+            var nosanaNodes = (nosana.nodes || []);
+            var hosts = nosanaNodes.length;
             var hostLabel = hosts === 1 ? "Host" : "Hosts";
             nodeCount.textContent = onlineNodes + " " + pcLabel + ", " + hosts + " " + hostLabel;
         }
@@ -114,6 +119,76 @@
         }
 
         tbody.innerHTML = html;
+
+        // ---- Nosana tab rendering ----
+        var nosanaState = data.nosana || {};
+        var nNodes = nosanaState.nodes || [];
+
+        if (nosanaCount) {
+            nosanaCount.textContent = nNodes.length + " discovered";
+        }
+        if (nosanaProbeTime) {
+            nosanaProbeTime.textContent = nosanaState.last_probe || "\u2014";
+        }
+
+        if (nosanaTbody) {
+            var nHtml = "";
+            for (var ni = 0; ni < nNodes.length; ni++) {
+                var nn = nNodes[ni];
+                var walletDisplay = "\u2014";
+                var walletTitle = "";
+                if (nn.wallet) {
+                    walletDisplay = nn.wallet.substring(0, 4) + "..." + nn.wallet.substring(nn.wallet.length - 4);
+                    walletTitle = nn.wallet;
+                }
+
+                var statusStyle = "";
+                var statusText = esc(nn.status || "unknown");
+                if (nn.status === "running") statusStyle = "color: var(--cl-success)";
+                else if (nn.status === "queued") statusStyle = "color: var(--cl-warning)";
+                else if (nn.status === "error") statusStyle = "color: var(--cl-danger)";
+                else statusStyle = "opacity: 0.5";
+
+                var marketDisplay = "\u2014";
+                if (nn.market) {
+                    marketDisplay = nn.market.substring(0, 4) + "..." + nn.market.substring(nn.market.length - 4);
+                }
+
+                var queueDisplay = "\u2014";
+                if (nn.queue_position != null && nn.queue_length != null) {
+                    queueDisplay = nn.queue_position + " / " + nn.queue_length;
+                }
+
+                var jobDisplay = "\u2014";
+                if (nn.job) {
+                    jobDisplay = nn.job.substring(0, 4) + "..." + nn.job.substring(nn.job.length - 4);
+                }
+
+                nHtml += "<tr>"
+                    + "<td>" + esc(nn.container || "\u2014") + "</td>"
+                    + "<td title=\"" + esc(walletTitle) + "\">" + walletDisplay + "</td>"
+                    + "<td><span style=\"" + statusStyle + "\">" + statusText + "</span></td>"
+                    + "<td>" + marketDisplay + "</td>"
+                    + "<td>" + queueDisplay + "</td>"
+                    + "<td>" + jobDisplay + "</td>"
+                    + "</tr>";
+            }
+
+            if (nHtml === "") {
+                if (nosanaState.error) {
+                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                          + esc(nosanaState.error) + "</td></tr>";
+                } else if (nosanaState.last_probe) {
+                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                          + "No Nosana containers found</td></tr>";
+                } else {
+                    nHtml = "<tr><td colspan=\"6\" class=\"text-center text-muted\">"
+                          + "Waiting for probe...</td></tr>";
+                }
+            }
+
+            nosanaTbody.innerHTML = nHtml;
+        }
     });
 
     // ---- Helpers ----

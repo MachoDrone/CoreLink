@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.01.8 — 2026-02-20
+- Integrate @nosana/kit@2.1.5 for Nosana compute node discovery and blockchain status
+- New Node.js probe script (`nosana_probe.mjs`) discovers Nosana containers via Docker socket, extracts wallet addresses, queries Solana for node status (running/queued/idle)
+- New Python wrapper (`nosana.py`) runs probe as subprocess every 30s, caches results thread-safely
+- Replace "Reserved" tab with "Nosana" tab showing container name, wallet (truncated), status, market, queue position, and job
+- Hosts counter in Fleet status now reflects discovered Nosana node count
+- Add Node.js 22.x to container Dockerfile for @nosana/kit runtime
+- Mount Docker socket (`/var/run/docker.sock`) into container for container discovery
+- Graceful degradation: probe disables if Node.js, probe script, or Docker socket missing
+- Bump version to 0.01.8 in corelink.py, server.py, and README.md
+
 ## v0.01.7 — 2026-02-20
 - Fix gossip thread starvation caused by eventlet cooperative scheduling
 - Increase UDP receive buffer to 2 MB on multicast and unicast gossip sockets

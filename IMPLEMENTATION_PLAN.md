@@ -38,10 +38,10 @@ Container runs with `--network host` (required for UDP multicast), bind-mounts `
 | v0.01.5 | Fix versioning scheme, correct all historical versions, add permanent versioning rules |
 | v0.01.6 | Rename columns (Bottleneck, NTP Sync, CoreLink I/O), add info tooltip icons to all table headers |
 | v0.01.7 | Fix gossip thread starvation from eventlet; UDP buffer increase, faster select loop, push loop yield; relax NTP threshold to 5s |
+| v0.01.8 | Nosana integration: @nosana/kit probe discovers containers via Docker socket, extracts wallets, queries Solana for status; new Nosana tab replaces Reserved tab; Hosts counter populated |
 
 ## Roadmap / Next Steps
 
-- **Populate "Reserved" tab** — add future functionality to the currently placeholder tab
 - **More GPU metrics** — temperature, utilization, memory usage in the cluster table
 - **Table sorting/filtering** — allow users to sort and filter the GPU table columns
 - **Node uptime / last-seen column** — show how long each node has been online or when it was last seen
