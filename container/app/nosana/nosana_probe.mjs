@@ -85,6 +85,22 @@ async function getWalletAddress(containerId) {
 }
 
 // ---------------------------------------------------------------------------
+// Node API health check
+// ---------------------------------------------------------------------------
+
+const NODE_DOMAIN = "node.k8s.prd.nos.ci";
+
+async function checkNodeApi(walletAddress) {
+    try {
+        const url = `https://${walletAddress}.${NODE_DOMAIN}/`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        return resp.status === 200 ? "online" : "error";
+    } catch (e) {
+        return "unreachable";
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Blockchain queries
 // ---------------------------------------------------------------------------
 
@@ -242,6 +258,7 @@ async function main() {
             if (node.market && marketNames[node.market]) {
                 node.market_name = marketNames[node.market];
             }
+            node.node_api = await checkNodeApi(wallet);
         } catch (err) {
             node.error = err.message;
         }

@@ -173,6 +173,12 @@
                     durationDisplay = "\u2014 / " + fmtDuration(nn.max_duration);
                 }
 
+                var apiStyle = "";
+                var apiText = esc(nn.node_api || "\u2014");
+                if (nn.node_api === "online") apiStyle = "color: var(--cl-success)";
+                else if (nn.node_api === "unreachable") apiStyle = "color: var(--cl-danger)";
+                else if (nn.node_api === "error") apiStyle = "color: var(--cl-warning)";
+
                 nHtml += "<tr>"
                     + "<td>" + esc(nn.container || "\u2014") + "</td>"
                     + "<td title=\"" + esc(walletTitle) + "\">" + walletDisplay + "</td>"
@@ -181,18 +187,19 @@
                     + "<td>" + queueDisplay + "</td>"
                     + "<td>" + jobDisplay + "</td>"
                     + "<td>" + durationDisplay + "</td>"
+                    + "<td><span style=\"" + apiStyle + "\">" + apiText + "</span></td>"
                     + "</tr>";
             }
 
             if (nHtml === "") {
                 if (nosanaState.error) {
-                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"8\" class=\"text-center text-muted\">"
                           + esc(nosanaState.error) + "</td></tr>";
                 } else if (nosanaState.last_probe) {
-                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"8\" class=\"text-center text-muted\">"
                           + "No Nosana containers found</td></tr>";
                 } else {
-                    nHtml = "<tr><td colspan=\"7\" class=\"text-center text-muted\">"
+                    nHtml = "<tr><td colspan=\"8\" class=\"text-center text-muted\">"
                           + "Waiting for probe...</td></tr>";
                 }
             }
