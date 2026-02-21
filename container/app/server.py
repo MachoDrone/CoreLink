@@ -16,8 +16,9 @@ from auth import authenticate_pam, User, check_rate_limit, record_failure
 from gossip import GossipNode
 from gpu import get_local_gpu_info
 from monitor import AppMonitor
+from nosana import NosanaProbe
 
-VERSION = "0.01.7"
+VERSION = "0.01.9"
 
 # ---------------------------------------------------------------------------
 # Flask application setup
@@ -82,6 +83,8 @@ gossip = GossipNode(
     link_speed_max=_metrics.get("link_speed_max", 0),
     ntp_drift=_metrics.get("ntp_drift"),
 )
+
+nosana_probe = NosanaProbe()
 
 
 # ---------------------------------------------------------------------------
@@ -161,6 +164,7 @@ def handle_connect():
     emit("cluster_state", {
         "nodes": gossip.get_cluster_state(),
         "monitor": monitor.get_metrics(),
+        "nosana": nosana_probe.get_state(),
     })
 
 
@@ -172,6 +176,7 @@ def handle_request_update():
     emit("cluster_state", {
         "nodes": gossip.get_cluster_state(),
         "monitor": monitor.get_metrics(),
+        "nosana": nosana_probe.get_state(),
     })
 
 
@@ -190,8 +195,20 @@ def _push_cluster_state():
         socketio.emit("cluster_state", {
             "nodes": gossip.get_cluster_state(),
             "monitor": metrics,
+            "nosana": nosana_probe.get_state(),
         })
         socketio.sleep(0)  # yield to let gossip threads run
+
+
+def _nosana_collect_loop():
+    """Run Nosana probe every 30 seconds in a background task."""
+    socketio.sleep(10)  # initial delay — let other services start first
+    while True:
+        try:
+            nosana_probe.collect()
+        except Exception as exc:
+            print("[Nosana] probe error: %s" % exc)
+        socketio.sleep(30)
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +230,8 @@ if __name__ == "__main__":
         print("    GPU%s: %s" % (gpu["id"], gpu["model"]))
     print("  Port     : %d (HTTPS)" % args.port)
     print("  Gossip   : %d/udp" % _gossip_port)
+    if nosana_probe.enabled:
+        print("  Nosana   : probe enabled (Docker socket)")
     ca_cert = "/data/ssl/ca.pem"
     if os.path.isfile(ca_cert):
         print("  TLS      : CA-signed (download CA at https://%s:%d/ca.pem)"
@@ -226,6 +245,9 @@ if __name__ == "__main__":
 
     # Start background SocketIO pusher
     socketio.start_background_task(_push_cluster_state)
+
+    # Start Nosana probe loop
+    socketio.start_background_task(_nosana_collect_loop)
 
     # Run HTTPS server
     socketio.run(

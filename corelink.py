@@ -21,7 +21,7 @@ import time
 import urllib.request
 import urllib.error
 
-VERSION = "0.01.7"
+VERSION = "0.01.9"
 CONTAINER_NAME = "corelink"
 IMAGE_NAME = "corelink:latest"
 REPO_RAW_URL = "https://raw.githubusercontent.com/MachoDrone/CoreLink/main"
@@ -44,6 +44,9 @@ CONTAINER_FILES = [
     "container/app/templates/console.html",
     "container/app/static/css/style.css",
     "container/app/static/js/app.js",
+    "container/app/nosana/package.json",
+    "container/app/nosana/nosana_probe.mjs",
+    "container/app/nosana.py",
 ]
 
 
@@ -524,6 +527,7 @@ def start_container(port=443, regen_cert=False):
         "-v", "%s:/data/ssl/cert.pem:ro" % cert_path,
         "-v", "%s:/data/ssl/key.pem:ro" % key_path,
         "-v", "%s:/data/ssl/ca.pem:ro" % CA_CERT_PATH,
+        "-v", "/var/run/docker.sock:/var/run/docker.sock",
         "-e", "CORELINK_PORT=%d" % port,
         "-e", "CORELINK_HOSTNAME=%s" % hostname,
         "--restart", "unless-stopped",

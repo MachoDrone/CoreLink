@@ -15,6 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ethtool \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 22.x (required for @nosana/kit probe)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Install Python dependencies (3rd-party allowed inside container)
@@ -29,6 +34,10 @@ RUN mkdir -p /app/static/vendor/css /app/static/vendor/js && \
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" && \
     curl -sL -o /app/static/vendor/js/socket.io.min.js \
         "https://cdn.socket.io/4.7.5/socket.io.min.js"
+
+# Install Nosana probe npm dependencies (cached unless package.json changes)
+COPY app/nosana/package.json /app/nosana/package.json
+RUN cd /app/nosana && npm install --ignore-scripts --no-optional 2>/dev/null; exit 0
 
 # Copy application code
 COPY app/ /app/

@@ -22,9 +22,9 @@
                     aria-controls="tab-test" aria-selected="true">Test</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="reserved-tab" data-bs-toggle="tab"
-                    data-bs-target="#tab-reserved" type="button" role="tab"
-                    aria-controls="tab-reserved" aria-selected="false">Reserved</button>
+            <button class="nav-link" id="nosana-tab" data-bs-toggle="tab"
+                    data-bs-target="#tab-nosana" type="button" role="tab"
+                    aria-controls="tab-nosana" aria-selected="false">Nosana</button>
         </li>
     </ul>
 </div>
@@ -65,9 +65,37 @@
         </div>
     </div>
 
-    <!-- Reserved tab -->
-    <div class="tab-pane fade" id="tab-reserved" role="tabpanel" aria-labelledby="reserved-tab">
-        <p class="text-muted mt-3">Reserved for future use.</p>
+    <!-- Nosana tab -->
+    <div class="tab-pane fade" id="tab-nosana" role="tabpanel" aria-labelledby="nosana-tab">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted" style="font-size: 0.7rem;">
+                Nosana Nodes &mdash; <span id="nosana-count">0 discovered</span>
+            </span>
+            <span class="text-muted" style="font-size: 0.7rem;">
+                Last probe: <span id="nosana-probe-time">&mdash;</span>
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Container</th>
+                        <th>Wallet</th>
+                        <th>Status</th>
+                        <th>Market</th>
+                        <th>Queue</th>
+                        <th>Job</th>
+                        <th>Duration</th>
+                        <th>API</th>
+                    </tr>
+                </thead>
+                <tbody id="nosana-table-body">
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Waiting for probe...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

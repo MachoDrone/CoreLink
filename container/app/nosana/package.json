@@ -1,0 +1,9 @@
+{
+  "name": "corelink-nosana-probe",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@nosana/kit": "2.1.5"
+  }
+}

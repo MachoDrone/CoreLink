@@ -1,6 +1,6 @@
 # CoreLink
 
-GPU Cluster Communication Framework — v0.01.7
+GPU Cluster Communication Framework — v0.01.9
 
 CoreLink discovers NVIDIA GPUs on every machine in your LAN, shares the
 information via a lightweight gossip protocol, and presents it through a
@@ -122,7 +122,7 @@ Use `--regen-cert` to regenerate a node's certificate (e.g., after an IP change)
 | Tab | Description |
 |---|---|
 | **Test** | Live cluster view: computer name, GPU ID, GPU model, timestamp |
-| **Reserved** | Placeholder for future functionality |
+| **Nosana** | Nosana node discovery: container name, wallet address, blockchain status |
 
 ## Notes
 
@@ -130,3 +130,6 @@ Use `--regen-cert` to regenerate a node's certificate (e.g., after an IP change)
   (`python3 corelink.py --restart`).
 - TLS certificates are stored on the host in `~/.corelink/` and
   bind-mounted into the container.
+- The Docker socket (`/var/run/docker.sock`) is mounted into the
+  container to enable Nosana node discovery.  If no Nosana containers
+  are running, the Nosana tab shows "No Nosana containers found".
